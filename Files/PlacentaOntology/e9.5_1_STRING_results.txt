@@ -1,0 +1,2 @@
+geneSet	link	size	overlap	expect	enrichmentRatio	pValue	FDR	overlapId	userId
+GSE106852_EGFR+_UP_ITGA2+	Genes up-regulated in first trimester placenta: EGFR+ villous cytotrophoblasts versus ITGA2+ proliferative trophoblast niche	192	12	3.2289156626506026	3.716417910447761	9.654308252948773e-5	0.022687624394429617	5754;4041;79971;10413;7037;10938;8535;8549;130340;56897;9500;55662	WRNIP1;MAGED1;EHD1;HIF1AN;PTK7;AP1S3;WLS;LRP5;CBX4;TFRC;LGR5;YAP1

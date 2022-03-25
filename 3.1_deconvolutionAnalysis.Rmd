@@ -1,0 +1,172 @@
+---
+title: "RNA-seq Mouse Placenta"
+author: "Ha T. H. Vu"
+output: html_document
+---
+  
+```{r setup, include=FALSE}
+options(max.print = "75")
+knitr::opts_chunk$set(
+  echo = TRUE,
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "Files/",
+  fig.width = 8,
+  prompt = FALSE,
+  tidy = FALSE,
+  message = FALSE,
+  warning = TRUE
+)
+knitr::opts_knit$set(width = 75)
+```
+
+Documentation for the analysis of mouse placental RNA-seq data at e7.5, e8.5 and e9.5.
+
+## 1. Deconvolution analysis
+To determine if timepoint-specific gene groups could capture different cell populations of the placenta, we carried out deconvolution analysis with `LinSeed` and inferred the cell type profiles. <br>
+To run `LinSeed`, we need gene expression levels in TPM (obtained with `tximport`). Moreover, because of the permutation test for significance of genes, the running time can be long - this should be run on HPC. I have presaved an object to reproduce results here.<br>
+Here, we load the necessary files, including the expression tables.
+```{r, eval = F}
+library("linseed", suppressMessages())
+
+t2g <- read.table("Files/t2g.txt", header = T, sep = "\t")
+load("Files/e7.5geneLevelTPM.rda")
+load("Files/e8.5geneLevelTPM.rda")
+load("Files/e9.5geneLevelTPM.rda")
+
+abundance <- dplyr::inner_join(e7.5abundance, e8.5abundance, by = c("ens_gene" = "ens_gene"))
+abundance <- dplyr::inner_join(abundance, e9.5abundance, by = c("ens_gene" = "ens_gene"))
+rownames(abundance) <- abundance$ens_gene
+keep <- colnames(abundance)[2:17]
+abundance <- abundance[,keep]
+
+t2g2 <- dplyr::distinct(t2g[,2:3])
+t2g2 <- subset(t2g2, t2g2$ens_gene %in% rownames(abundance))
+rownames(t2g2) <- t2g2$ens_gene
+```
+Starting with top 5000 most expressed genes, we identify the most significant ones to carry out deconvolution analysis.
+```{r, eval = F}
+lo <- LinseedObject$new(abundance, topGenes=5000, annotation = t2g2, geneSymbol = "ens_gene") #use top 5000 most expressed genes
+
+lo$calculatePairwiseLinearity()
+lo$calculateSpearmanCorrelation()
+lo$calculateSignificanceLevel(10000) #use 100000 times to calculate significance. To reduce running time, reduce this number, but the results will be different
+
+temp <- lo$spearman
+names(lo$genes$pvals) <- rownames(temp) #ensure the gene names between objects matched
+```
+First, we look at the significance plot showing significant genes at p-value level of 0.05.
+```{r, eval = F}
+lo$significancePlot(0.05)
+lo$filterDatasetByPval(0.05)
+```
+Next, plot the SVD plot to determine the number of cell groups. We can also extract the variance SVD to calculate the exact changes as we increase the dimensions (cell groups).
+```{r, eval=F}
+lo$svdPlot()
+
+#calculate variance SVD for full data
+dataFull <- as.data.frame(lo$exp$full)
+dataFull <- dataFull[, grep("norm", colnames(dataFull))]
+vars <- svd(dataFull)$d^2
+vars <- cumsum(vars / sum(vars))
+dfFull <- data.frame(dimension=1:length(vars), variance=vars, filtered=FALSE)
+dfFull
+
+#calculate variance SVD for filtered data
+dataFiltered <- as.data.frame(lo$exp$filtered)
+dataFiltered <- dataFiltered[, grep("norm", colnames(dataFiltered))]
+vars <- svd(dataFiltered)$d^2
+vars <- cumsum(vars / sum(vars))
+dfFiltered <- data.frame(dimension=1:length(vars), variance=vars, filtered=TRUE)
+dfFiltered
+```
+From this plot and the variance, we determine that we have 5 groups.
+```{r, eval=F}
+set.seed(123)
+lo$setCellTypeNumber(5)
+lo$project("full") # projecting full dataset
+lo$project("filtered")
+lo$smartSearchCorners(dataset="filtered", error="norm")
+
+lo$deconvolveByEndpoints()
+plotProportions(lo$proportions)
+```
+The `signature` object will give us the expression levels of significant genes after deconvolution.
+```{r, eval=F}
+cells <- lo$signatures
+```
+Next, we select 100 closest genes to the simplex corners to be candidate markers. Since we have 5 corners corresponding to 5 cell groups, each cell group will have 100 candidate markers.
+```{r, eval=F}
+lo$selectGenes(100)
+```
+For each cell group, we determine the candidate markers that is closer to the group's corner than any other corner.
+```{r, eval=F}
+distances <- lo$distances
+colnames(distances) <- c(paste0("Group", 1:5))
+for (i in 1:5) {
+  sub <- distances[lo$markers[[i]],]
+  keep <- c()
+  for (j in 1:nrow(sub)) {
+    if (sub[j, i] == min(sub[j,])) {
+      keep <- c(keep, rownames(sub)[j])
+    }
+  }
+  markers <- unique(t2g[t2g$ens_gene %in% keep, "ext_gene"])
+  print(markers)
+  #write.table(markers, paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/7_deconvolution/cell", i, "markers-minDistance-inTop100.txt"), quote = F, row.names = F)
+}
+```
+We can check if markers are in time-point specific groups.
+```{r, eval=F}
+e7.5specific <- read.table("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/4_specificGenes/e7.5specific_ensGenes.txt")
+e8.5specific <- read.table("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/4_specificGenes/e8.5specific_ensGenes.txt")
+e9.5specific <- read.table("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/4_specificGenes/e9.5specific_ensGenes.txt")
+
+for (i in 1:5) {
+  markers <- read.table(paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/7_deconvolution/cell", i, "markers-minDistance-inTop100.txt"), header = T, sep = "\t")
+  print(paste0("Cell group ", i))
+  print("Number of markers specific to e7.5:")
+  print(length(unique(t2g[t2g$ens_gene %in% intersect(unique(t2g[t2g$ext_gene %in% markers$x, "ens_gene"]), e7.5specific$V1), "ext_gene"])))
+  print("Number of markers specific to e8.5:")
+  print(length(unique(t2g[t2g$ens_gene %in% intersect(unique(t2g[t2g$ext_gene %in% markers$x, "ens_gene"]), e8.5specific$V1), "ext_gene"])))
+  print("Number of markers specific to e9.5:")
+  print(length(unique(t2g[t2g$ens_gene %in% intersect(unique(t2g[t2g$ext_gene %in% markers$x, "ens_gene"]), e9.5specific$V1), "ext_gene"])))
+}
+```
+```
+[1] "Cell group 1"
+[1] "Number of markers specific to e7.5:"
+[1] 0
+[1] "Number of markers specific to e8.5:"
+[1] 1
+[1] "Number of markers specific to e9.5:"
+[1] 1
+[1] "Cell group 2"
+[1] "Number of markers specific to e7.5:"
+[1] 0
+[1] "Number of markers specific to e8.5:"
+[1] 45
+[1] "Number of markers specific to e9.5:"
+[1] 8
+[1] "Cell group 3"
+[1] "Number of markers specific to e7.5:"
+[1] 95
+[1] "Number of markers specific to e8.5:"
+[1] 4
+[1] "Number of markers specific to e9.5:"
+[1] 0
+[1] "Cell group 4"
+[1] "Number of markers specific to e7.5:"
+[1] 0
+[1] "Number of markers specific to e8.5:"
+[1] 10
+[1] "Number of markers specific to e9.5:"
+[1] 66
+[1] "Cell group 5"
+[1] "Number of markers specific to e7.5:"
+[1] 0
+[1] "Number of markers specific to e8.5:"
+[1] 1
+[1] "Number of markers specific to e9.5:"
+[1] 40
+```
