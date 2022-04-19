@@ -185,22 +185,24 @@ library("dplyr")
 set.seed(123)
 
 ###building sample description
-dir <- "Files/1_kallisto/"
+dir <- "Z:/hhvu/Project1_2/RNA-seq/1_kallisto/official/"
 sample_id <- dir(file.path(dir))
 sample_id <- sample_id[grep("^S", sample_id)] #remove the unrelated file if there is
 
 kal_dirs <- file.path(dir, sample_id, "abundance.h5")
 
-desc <- matrix(c(sample_id, "e9.5", "e8.5", "e9.5", "e9.5", "e9.5", "e9.5", "e9.5", "e7.5", "e7.5", "e7.5", "e7.5", "e7.5", "e7.5", "e8.5", "e8.5", "e8.5", "e8.5", "e8.5"), nrow = 18, ncol = 2, byrow = FALSE)
-desc <- as.data.frame(desc)
+desc <- read.table("Files/0.0_sampleNameMapping.csv", sep = "\t", header = F)
+desc$condition <- substr(desc$V1, 1, 4)
+desc <- desc[order(desc$V2),]
 desc <- dplyr::mutate(desc, path = kal_dirs)
+desc <- desc[,2:ncol(desc)]
 colnames(desc) <- c("sample", "condition", "path")
 desc <- desc[order(desc$condition), ]
-desc <- subset(desc, !(desc$sample %in% c("S55", "S56"))) #remove sample S55, S56 outlier
+desc <- subset(desc, !(desc$ID %in% c("S55", "S56"))) #remove sample S55, S56 outlier
 
-e7.5vsE8.5 <- subset(desc, (desc$condition %in% c("e7.5", "e8.5")))
-e8.5vsE9.5 <- subset(desc, (desc$condition %in% c("e9.5", "e8.5")))
-e7.5vsE9.5 <- subset(desc, (desc$condition %in% c("e7.5", "e9.5")))
+e7.5vsE8.5 <- subset(desc, (desc$condition %in% c("E7.5", "E8.5")))
+e8.5vsE9.5 <- subset(desc, (desc$condition %in% c("E9.5", "E8.5")))
+e7.5vsE9.5 <- subset(desc, (desc$condition %in% c("E7.5", "E9.5")))
 
 ###building transcript name table. Since the object is presaved, just load it here
 t2g <- read.table("Files/t2g.txt", header = T, sep = "\t")
@@ -455,4 +457,7 @@ length(e9.5specific)
 e9.5TFs <- intersect(e9.5specific, TF_cofactors$V1)
 length(e9.5TFs)
 #write.table(e9.5TFs, "Files/e9.5specific_TFensGenes.txt", row.names = F, quote = F)
+```
+```{r}
+sessionInfo()
 ```

@@ -219,3 +219,7 @@ for (i in c("e7.5_1_STRING_results.txt", "e9.5_1_STRING_results.txt", "e9.5_3_GE
   print(plotPO(f, gsub("_results.txt", "", i)))
 }
 ```
+
+```{r}
+sessionInfo()
+```

@@ -212,6 +212,9 @@ go &lt;- function(subnetworkGenes) {
 }</code></pre>
 <p>We started out with one subnetwork from the largest connected component of e7.5, three of e8.5 and fave of e9.5. After looking at the GO terms, we can narrow down to focus on some particular networks (<code>e7.5_1_STRING</code>, <code>e8.5_1_STRING</code>, <code>e9.5_1_STRING</code>, <code>e9.5_2_STRING</code>, <code>e9.5_3_STRING</code>, and <code>e9.5_4_STRING</code>). We then get the hub genes, defined to be nodes that have degree, betweenness and closeness centralities in 90th quantile in their subnetworks. The following code is to obtain hub genes:</p>
 <pre class="r"><code>library(&quot;tidyverse&quot;)
+#&gt; Warning: package &#39;tibble&#39; was built under R version 4.1.3
+#&gt; Warning: package &#39;tidyr&#39; was built under R version 4.1.3
+#&gt; Warning: package &#39;dplyr&#39; was built under R version 4.1.3
 t2g &lt;- read.table(&quot;Files/t2g.txt&quot;, header = T, sep = &quot;\t&quot;)
 
 #function to analyze STRING networks
@@ -416,6 +419,44 @@ for (time in c(&quot;e7.5&quot;, &quot;e8.5&quot;, &quot;e9.5&quot;)) {
 #&gt; [15] &quot;Rhox9&quot;   &quot;Hes1&quot;    &quot;Elmsan1&quot; &quot;Cebpb&quot;   &quot;Gata1&quot;   &quot;Lhx2&quot;    &quot;Hexim1&quot; 
 #&gt; [22] &quot;Cdk2&quot;    &quot;Cbx4&quot;    &quot;Dpf3&quot;    &quot;Jun&quot;     &quot;Hsbp1&quot;   &quot;Rbm15b&quot;  &quot;Tcf25&quot;  
 #&gt; [29] &quot;Sin3b&quot;</code></pre>
+<pre class="r"><code>sessionInfo()
+#&gt; R version 4.1.1 (2021-08-10)
+#&gt; Platform: x86_64-w64-mingw32/x64 (64-bit)
+#&gt; Running under: Windows 10 x64 (build 19043)
+#&gt; 
+#&gt; Matrix products: default
+#&gt; 
+#&gt; locale:
+#&gt; [1] LC_COLLATE=English_United States.1252 
+#&gt; [2] LC_CTYPE=English_United States.1252   
+#&gt; [3] LC_MONETARY=English_United States.1252
+#&gt; [4] LC_NUMERIC=C                          
+#&gt; [5] LC_TIME=English_United States.1252    
+#&gt; 
+#&gt; attached base packages:
+#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     
+#&gt; 
+#&gt; other attached packages:
+#&gt;  [1] GENIE3_1.16.0   tximport_1.22.0 forcats_0.5.1   stringr_1.4.0  
+#&gt;  [5] dplyr_1.0.8     purrr_0.3.4     readr_2.0.2     tidyr_1.2.0    
+#&gt;  [9] tibble_3.1.6    ggplot2_3.3.5   tidyverse_1.3.1
+#&gt; 
+#&gt; loaded via a namespace (and not attached):
+#&gt;  [1] Rcpp_1.0.7       lubridate_1.8.0  assertthat_0.2.1 digest_0.6.28   
+#&gt;  [5] utf8_1.2.2       plyr_1.8.6       R6_2.5.1         cellranger_1.1.0
+#&gt;  [9] backports_1.3.0  reprex_2.0.1     evaluate_0.14    httr_1.4.2      
+#&gt; [13] pillar_1.6.4     rlang_1.0.2      readxl_1.3.1     rstudioapi_0.13 
+#&gt; [17] jquerylib_0.1.4  rmarkdown_2.11   bit_4.0.4        munsell_0.5.0   
+#&gt; [21] broom_0.8.0      compiler_4.1.1   modelr_0.1.8     xfun_0.27       
+#&gt; [25] pkgconfig_2.0.3  htmltools_0.5.2  tidyselect_1.1.2 fansi_0.5.0     
+#&gt; [29] crayon_1.4.2     tzdb_0.2.0       dbplyr_2.1.1     withr_2.5.0     
+#&gt; [33] grid_4.1.1       jsonlite_1.7.2   gtable_0.3.0     lifecycle_1.0.1 
+#&gt; [37] DBI_1.1.1        magrittr_2.0.1   scales_1.1.1     cli_3.2.0       
+#&gt; [41] stringi_1.7.5    vroom_1.5.5      reshape2_1.4.4   fs_1.5.0        
+#&gt; [45] xml2_1.3.2       ellipsis_0.3.2   generics_0.1.2   vctrs_0.3.8     
+#&gt; [49] tools_4.1.1      bit64_4.0.5      glue_1.4.2       hms_1.1.1       
+#&gt; [53] parallel_4.1.1   fastmap_1.1.0    yaml_2.2.1       colorspace_2.0-2
+#&gt; [57] rvest_1.0.2      knitr_1.36       haven_2.4.3</code></pre>
 </div>
 
 

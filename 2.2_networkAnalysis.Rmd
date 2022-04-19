@@ -211,3 +211,6 @@ for (time in c("e7.5", "e8.5", "e9.5")) {
   }
 }
 ```
+```{r}
+sessionInfo()
+```
