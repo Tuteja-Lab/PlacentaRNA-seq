@@ -184,6 +184,7 @@ go &lt;- function(subnetworkGenes) {
   res$GeneRatio &lt;- sapply(strsplit(res$GeneRatio, &quot;/&quot;), function(x) as.numeric(x[1])/as.numeric(x[2]))
   res$BgRatio &lt;- sapply(strsplit(res$BgRatio, &quot;/&quot;), function(x) as.numeric(x[1])/as.numeric(x[2]))
   res$Fold &lt;- as.numeric(res$GeneRatio)/as.numeric(res$BgRatio)
+  res &lt;- res[res$qvalue &lt;= 0.05 &amp; res$Fold &gt;= 2 &amp; res$Count &gt;= 5,]
   
   return(res)
 }</code></pre>
