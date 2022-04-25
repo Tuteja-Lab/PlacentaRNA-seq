@@ -6,6 +6,7 @@ genes <- genes(txdb)
 coor <- as.data.frame(genes)
 
 file <- someGeneList #input gene names here
+file <- read.table('Files/STRING/e7.5/largestComponent/e7.5_1/e7.5_1_nodeTable_KK.csv', sep= ',', header=T)
 
 newCoor <- filter(coor, coor$gene_id %in% file$V1)
 

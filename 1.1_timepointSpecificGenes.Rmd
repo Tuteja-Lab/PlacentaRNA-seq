@@ -430,14 +430,17 @@ e8.5_e8.5vsE9.5 <- read.table("Files/e8.5_e8.5vse9.5_DEtransGenes.txt", header =
 e8.5specificTrans <- intersect(union(e8.5_e7.5vsE8.5$target_id, e8.5_e8.5vsE9.5$target_id), unique(e8.5Hier$transcripts))
 length(e8.5specificTrans)
 #write.table(e8.5specificTrans, "Files/e8.5specific_trans.txt", row.names = F, quote = F)
+write.table(e8.5specificTrans, "Files/e8.5specific_trans_KK.txt", row.names = F, quote = F)
 
 e8.5specific <- unique(t2g[t2g$target_id %in% e8.5specificTrans, "ens_gene"])
 length(e8.5specific)
 #write.table(e8.5specific, "Files/e8.5specific_ensGenes.txt", row.names = F, quote = F)
+write.table(e8.5specific, "Files/e8.5specific_ensGenes_KK.txt", row.names = F, quote = F)
 
 e8.5TFs <- intersect(e8.5specific, TF_cofactors$V1)
 length(e8.5TFs)
 #write.table(e8.5TFs, "Files/e8.5specific_TFensGenes.txt", row.names = F, quote = F)
+write.table(e8.5TFs, "Files/e8.5specific_TFensGenes_KK.txt", row.names = F, quote = F)
 ```
 
 ```{r}
@@ -448,14 +451,17 @@ e7.5_e7.5vsE9.5 <- read.table("Files/e7.5_e7.5vse9.5_DEtransGenes.txt", header =
 e7.5specificTrans <- setdiff(intersect(e7.5_e7.5vsE9.5$target_id, e7.5Hier$transcripts), e8.5specificTrans)
 length(e7.5specificTrans)
 #write.table(e7.5specificTrans, "Files/e7.5specific_trans.txt", row.names = F, quote = F)
+write.table(e7.5specificTrans, "Files/e7.5specific_trans_KK.txt", row.names = F, quote = F)
 
 e7.5specific <- unique(t2g[t2g$target_id %in% e7.5specificTrans, "ens_gene"])
 length(e7.5specific)
 #write.table(e7.5specific, "Files/e7.5specific_ensGenes.txt", row.names = F, quote = F)
+write.table(e7.5specific, "Files/e7.5specific_ensGenes_KK.txt", row.names = F, quote = F)
 
 e7.5TFs <- intersect(e7.5specific, TF_cofactors$V1)
 length(e7.5TFs)
 #write.table(e7.5TFs, "Files/e7.5specific_TFensGenes.txt", row.names = F, quote = F)
+write.table(e7.5TFs, "Files/e7.5specific_TFensGenes_KK.txt", row.names = F, quote = F)
 ```
 ```{r}
 #e9.5 specific genes
@@ -465,14 +471,17 @@ e9.5_e7.5vsE9.5 <- read.table("Files/e9.5_e7.5vse9.5_DEtransGenes.txt", header =
 e9.5specificTrans <- setdiff(intersect(e9.5_e7.5vsE9.5$target_id, e9.5Hier$transcripts), e8.5specificTrans)
 length(e9.5specificTrans)
 #write.table(e9.5specificTrans, "Files/e9.5specific_trans.txt", row.names = F, quote = F)
+write.table(e9.5specificTrans, "Files/e9.5specific_trans_KK.txt", row.names = F, quote = F)
 
 e9.5specific <- unique(t2g[t2g$target_id %in% e9.5specificTrans, "ens_gene"])
 length(e9.5specific)
 #write.table(e9.5specific, "Files/e9.5specific_ensGenes.txt", row.names = F, quote = F)
+write.table(e9.5specific, "Files/e9.5specific_ensGenes_KK.txt", row.names = F, quote = F)
 
 e9.5TFs <- intersect(e9.5specific, TF_cofactors$V1)
 length(e9.5TFs)
 #write.table(e9.5TFs, "Files/e9.5specific_TFensGenes.txt", row.names = F, quote = F)
+write.table(e9.5TFs, "Files/e9.5specific_TFensGenes_KK.txt", row.names = F, quote = F)
 ```
 ```{r}
 sessionInfo()
