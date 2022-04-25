@@ -101,14 +101,17 @@ tpm2 <- t(tpm2)
 tpm2 <- as.data.frame(tpm2)
 dim(tpm2)[1] #number of transcripts for downstream
 #write.table(tpm2, "Files/tpmForClustering.txt", quote = F, row.names = T, sep = "\t")
+write.table(tpm2, "Files/tpmForClustering_KK.txt", quote = F, row.names = T, sep = "\t")
 ```
 After filtering and getting 23571 protein-coding transcripts, we carry out hierarchical clustering.
 ```{r}
 ###hierarchical clustering =====
 hc <- hclust(dist(tpm2, method = "euclidean"), "complete")
 #save(hc, file = "/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/2B_hierarchicalClustering/hierClust.rda")
+save(hc, file = "Files/hierClust_KK.rda")
 dend <- as.dendrogram(hc)
 #save(dend, file = "/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/2B_hierarchicalClustering/dendrogram.rda")
+save(dend, file = "Files/dendrogram_KK.rda")
 ```
 To identify groups, we cut the tree at the highest level and obtain 3 groups. The number of transcripts in each group is: <br>
 - Group e7.5: 8242 transcripts (= 5566 genes) <br>
@@ -155,24 +158,28 @@ row.names(summary) <- 1:nrow(summary)
 summary <- inner_join(summary, trans_cluster, by = c("transcripts" = "name"))
 summary <- inner_join(summary, t2g, by = c("transcripts" = "target_id"))
 #write.table(summary, "/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/2B_hierarchicalClustering/transcriptGroups.txt", sep  = "\t", row.names = F, quote = F)
+write.table(summary, "Files/transcriptGroups_KK.txt", sep  = "\t", row.names = F, quote = F)
 
 #group 1
 geneGroup1 <- subset(summary, summary$value == "1")
 length(unique(geneGroup1$transcripts))
 length(unique(geneGroup1$ens_gene))
 #write.table(geneGroup1, "/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/2B_hierarchicalClustering/e8.5Group.txt", sep  = " ", quote = F)
+write.table(geneGroup1, "Files/e8.5Group_KK.txt", sep  = " ", quote = F)
 
 #group 2
 geneGroup2 <- subset(summary, summary$value == "2")
 length(unique(geneGroup2$transcripts))
 length(unique(geneGroup2$ens_gene))
 #write.table(geneGroup2, "/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/2B_hierarchicalClustering/e9.5Group.txt", sep  = " ", quote = F)
+write.table(geneGroup2, "Files/e9.5Group_KK.txt", sep  = " ", quote = F)
 
 #group 3
 geneGroup3 <- subset(summary, summary$value == "3")
 length(unique(geneGroup2$transcripts))
 length(unique(geneGroup3$ens_gene))
 #write.table(geneGroup3, "/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/2B_hierarchicalClustering/e7.5Group.txt", sep  = " ", quote = F)
+write.table(geneGroup3, "Files/e7.5Group_KK.txt", sep  = " ", quote = F)
 ```
 
 ## 2. Differential expression analysis:
@@ -185,7 +192,8 @@ library("dplyr")
 set.seed(123)
 
 ###building sample description
-dir <- "Z:/hhvu/Project1_2/RNA-seq/1_kallisto/official/"
+#dir <- "Z:/hhvu/Project1_2/RNA-seq/1_kallisto/official/"
+dir <- "/Volumes/geetu-lab/hhvu/Project1_2/RNA-seq/1_kallisto/official/"
 sample_id <- dir(file.path(dir))
 sample_id <- sample_id[grep("^S", sample_id)] #remove the unrelated file if there is
 
@@ -288,12 +296,15 @@ length(unique(e7.5vsE8.5deg$ens_gene)) #check total number of DE genes
 e7.5_e7.5vsE8.5 <- e7.5vsE8.5deg[e7.5vsE8.5deg$log2FC <= -log2(1.5),]
 length(unique(e7.5_e7.5vsE8.5$target_id)) #check total number of transcripts up-regulated at e7.5, compared to e8.5
 length(unique(e7.5_e7.5vsE8.5$ens_gene)) #check total number of genes up-regulated at e7.5, compared to e8.5
-#write.table(e7.5_e7.5vsE8.5, "/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/2A_sleuth/e7.5_e7.5vsE8.5_DEtransGenes.txt", row.names = F, quote = F, sep = "\t")
+#write.table(e7.5_e7.5vsE8.5, "Files/e7.5_e7.5vsE8.5_DEtransGenes.txt", row.names = F, quote = F, sep = "\t")
+write.table(e7.5_e7.5vsE8.5, "Files/e7.5_e7.5vsE8.5_DEtransGenes_KK.txt", row.names = F, quote = F, sep = "\t")
 
 e8.5_e7.5vsE8.5 <- e7.5vsE8.5deg[e7.5vsE8.5deg$log2FC >= log2(1.5),]
 length(unique(e8.5_e7.5vsE8.5$target_id)) #check total number of transcripts up-regulated at e8.5, compared to e7.5
 length(unique(e8.5_e7.5vsE8.5$ens_gene)) #check total number of genes up-regulated at e8.5, compared to e7.5
-#write.table(e8.5_e7.5vsE8.5, "/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/2A_sleuth/e8.5_e7.5vsE8.5_DEtransGenes.txt", row.names = F, quote = F, sep = "\t")
+#write.table(e8.5_e7.5vsE8.5, "Files/e8.5_e7.5vsE8.5_DEtransGenes.txt", row.names = F, quote = F, sep = "\t")
+write.table(e8.5_e7.5vsE8.5, "Files/e8.5_e7.5vsE8.5_DEtransGenes_KK.txt", row.names = F, quote = F, sep = "\t")
+
 ```
 For **e7.5 vs e9.5** test: <br>
 + Number of DE transcripts: 3948 <br>
@@ -313,12 +324,15 @@ length(unique(e7.5vse9.5deg$ens_gene)) #check total number of DE genes
 e7.5_e7.5vse9.5 <- e7.5vse9.5deg[e7.5vse9.5deg$log2FC <= -log2(1.5),]
 length(unique(e7.5_e7.5vse9.5$target_id)) #check total number of transcripts up-regulated at e7.5, compared to e9.5
 length(unique(e7.5_e7.5vse9.5$ens_gene)) #check total number of genes up-regulated at e7.5, compared to e9.5
-#write.table(e7.5_e7.5vse9.5, "/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/2A_sleuth/e7.5_e7.5vse9.5_DEtransGenes.txt", row.names = F, quote = F, sep = "\t")
+#write.table(e7.5_e7.5vse9.5, "Files/e7.5_e7.5vse9.5_DEtransGenes.txt", row.names = F, quote = F, sep = "\t")
+write.table(e7.5_e7.5vse9.5, "Files/e7.5_e7.5vse9.5_DEtransGenes_KK.txt", row.names = F, quote = F, sep = "\t")
 
 e9.5_e7.5vse9.5 <- e7.5vse9.5deg[e7.5vse9.5deg$log2FC >= log2(1.5),]
 length(unique(e9.5_e7.5vse9.5$target_id)) #check total number of transcripts up-regulated at e9.5, compared to e7.5
 length(unique(e9.5_e7.5vse9.5$ens_gene)) #check total number of genes up-regulated at e9.5, compared to e7.5
-#write.table(e9.5_e7.5vse9.5, "/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/2A_sleuth/e9.5_e7.5vse9.5_DEtransGenes.txt", row.names = F, quote = F, sep = "\t")
+#write.table(e9.5_e7.5vse9.5, "Files/e9.5_e7.5vse9.5_DEtransGenes.txt", row.names = F, quote = F, sep = "\t")
+write.table(e9.5_e7.5vse9.5, "Files/e9.5_e7.5vse9.5_DEtransGenes_KK.txt", row.names = F, quote = F, sep = "\t")
+
 ```
 For **e8.5 vs e9.5** test: <br>
 + Number of DE transcripts: 1255 <br>
@@ -338,12 +352,14 @@ length(unique(e8.5vse9.5deg$ens_gene)) #check total number of DE genes
 e8.5_e8.5vse9.5 <- e8.5vse9.5deg[e8.5vse9.5deg$log2FC <= -log2(1.5),]
 length(unique(e8.5_e8.5vse9.5$target_id)) #check total number of transcripts up-regulated at e8.5, compared to e9.5
 length(unique(e8.5_e8.5vse9.5$ens_gene)) #check total number of genes up-regulated at e8.5, compared to e9.5
-#write.table(e8.5_e8.5vse9.5, "/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/2A_sleuth/e8.5_e8.5vse9.5_DEtransGenes.txt", row.names = F, quote = F, sep = "\t")
+#write.table(e8.5_e8.5vse9.5, "Files/e8.5_e8.5vse9.5_DEtransGenes.txt", row.names = F, quote = F, sep = "\t")
+write.table(e8.5_e8.5vse9.5, "Files/e8.5_e8.5vse9.5_DEtransGenes_KK.txt", row.names = F, quote = F, sep = "\t")
 
 e9.5_e8.5vse9.5 <- e8.5vse9.5deg[e8.5vse9.5deg$log2FC >= log2(1.5),]
 length(unique(e9.5_e8.5vse9.5$target_id)) #check total number of transcripts up-regulated at e9.5, compared to e8.5
 length(unique(e9.5_e8.5vse9.5$ens_gene)) #check total number of genes up-regulated at e9.5, compared to e8.5
 #write.table(e9.5_e8.5vse9.5, "/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/2A_sleuth/e9.5_e8.5vse9.5_DEtransGenes.txt", row.names = F, quote = F, sep = "\t")
+write.table(e9.5_e8.5vse9.5, "Files/e9.5_e8.5vse9.5_DEtransGenes_KK.txt", row.names = F, quote = F, sep = "\t")
 ```
 This part has function `deg2()` which is for plotting purpose, as for volcano plot we need insignificant transcripts also.
 ```{r, eval = F}

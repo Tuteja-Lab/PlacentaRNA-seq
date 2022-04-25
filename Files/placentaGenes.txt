@@ -1,0 +1,179 @@
+#this file was downloaded from Gene Ontology website, 4/7/2022. It contains MOUSE genes (taxon=mus musculus) that are associated with GO term "placenta development"
+Ada	MGI:MGI:87916	adenosine deaminase
+Adm	MGI:MGI:108058	adrenomedullin
+Akt1	MGI:MGI:87986	thymoma viral proto-oncogene 1
+Alkbh1	MGI:MGI:2384034	alkB homolog 1, histone H2A dioxygenase
+Apela	MGI:MGI:3642370	apelin receptor early endogenous ligand
+Arid1a	MGI:MGI:1935147	AT rich interactive domain 1A (SWI-like)
+Arnt	MGI:MGI:88071	aryl hydrocarbon receptor nuclear translocator
+Ascl2	MGI:MGI:96920	achaete-scute family bHLH transcription factor 2
+Ash1l	MGI:MGI:2183158	ASH1 like histone lysine methyltransferase
+Birc2	MGI:MGI:1197009	baculoviral IAP repeat-containing 2
+Birc6	MGI:MGI:1276108	baculoviral IAP repeat-containing 6
+Bmp5	MGI:MGI:88181	bone morphogenetic protein 5
+Bmp7	MGI:MGI:103302	bone morphogenetic protein 7
+Bmpr2	MGI:MGI:1095407	bone morphogenetic protein receptor, type II (serine/threonine kinase)
+Bptf	MGI:MGI:2444008	bromodomain PHD finger transcription factor
+Ccdc134	MGI:MGI:1923707	coiled-coil domain containing 134
+Ccn1	MGI:MGI:88613	cellular communication network factor 1
+Ccnf	MGI:MGI:102551	cyclin F
+Cdh1	MGI:MGI:88354	cadherin 1
+Cdkn1b	MGI:MGI:104565	cyclin-dependent kinase inhibitor 1B
+Cdkn1c	MGI:MGI:104564	cyclin-dependent kinase inhibitor 1C (P57)
+Cdx2	MGI:MGI:88361	caudal type homeobox 2
+Cdx4	MGI:MGI:88362	caudal type homeobox 4
+Cebpa	MGI:MGI:99480	CCAAT/enhancer binding protein (C/EBP), alpha
+Cebpb	MGI:MGI:88373	CCAAT/enhancer binding protein (C/EBP), beta
+Cited1	MGI:MGI:108023	Cbp/p300-interacting transactivator with Glu/Asp-rich carboxy-terminal domain 1
+Cited2	MGI:MGI:1306784	Cbp/p300-interacting transactivator, with Glu/Asp-rich carboxy-terminal domain, 2
+Csf2	MGI:MGI:1339752	colony stimulating factor 2 (granulocyte-macrophage)
+Cts7	MGI:MGI:1860262	cathepsin 7
+Cts8	MGI:MGI:1860275	cathepsin 8
+Ctsb	MGI:MGI:88561	cathepsin B
+Ctsl	MGI:MGI:88564	cathepsin L
+Cul7	MGI:MGI:1913765	cullin 7
+Dazap1	MGI:MGI:1917498	DAZ associated protein 1
+Dedd	MGI:MGI:1333874	death effector domain-containing
+Dlx3	MGI:MGI:94903	distal-less homeobox 3
+Dnajb6	MGI:MGI:1344381	DnaJ heat shock protein family (Hsp40) member B6
+Dnmt3l	MGI:MGI:1859287	DNA (cytosine-5-)-methyltransferase 3-like
+E2f7	MGI:MGI:1289147	E2F transcription factor 7
+E2f8	MGI:MGI:1922038	E2F transcription factor 8
+Egfr	MGI:MGI:95294	epidermal growth factor receptor
+Egln1	MGI:MGI:1932286	egl-9 family hypoxia-inducible factor 1
+Eomes	MGI:MGI:1201683	eomesodermin
+Epas1	MGI:MGI:109169	endothelial PAS domain protein 1
+Epor	MGI:MGI:95408	erythropoietin receptor
+Erf	MGI:MGI:109637	Ets2 repressor factor
+Esrrb	MGI:MGI:1346832	estrogen related receptor, beta
+Esx1	MGI:MGI:1096388	extraembryonic, spermatogenesis, homeobox 1
+Etnk2	MGI:MGI:2443760	ethanolamine kinase 2
+Etv2	MGI:MGI:99253	ets variant 2
+Fbn2	MGI:MGI:95490	fibrillin 2
+Fbxw8	MGI:MGI:1923041	F-box and WD-40 domain protein 8
+Fgfr2	MGI:MGI:95523	fibroblast growth factor receptor 2
+Fosl1	MGI:MGI:107179	fos-like antigen 1
+Foxd3	MGI:MGI:1347473	forkhead box D3
+Fzd5	MGI:MGI:108571	frizzled class receptor 5
+Gab1	MGI:MGI:108088	growth factor receptor bound protein 2-associated protein 1
+Gata2	MGI:MGI:95662	GATA binding protein 2
+Gcm1	MGI:MGI:108045	glial cells missing homolog 1
+Ggnbp2	MGI:MGI:2387356	gametogenetin binding protein 2
+Ghrl	MGI:MGI:1930008	ghrelin
+Ghsr	MGI:MGI:2441906	growth hormone secretagogue receptor
+Gjb3	MGI:MGI:95721	gap junction protein, beta 3
+Gjb5	MGI:MGI:95723	gap junction protein, beta 5
+Grb2	MGI:MGI:95805	growth factor receptor bound protein 2
+Grhl2	MGI:MGI:2182543	grainyhead like transcription factor 2
+Hand1	MGI:MGI:103577	heart and neural crest derivatives expressed 1
+Hectd1	MGI:MGI:2384768	HECT domain E3 ubiquitin protein ligase 1
+Hes1	MGI:MGI:104853	hes family bHLH transcription factor 1
+Hey1	MGI:MGI:1341800	hairy/enhancer-of-split related with YRPW motif 1
+Hey2	MGI:MGI:1341884	hairy/enhancer-of-split related with YRPW motif 2
+Hif1a	MGI:MGI:106918	hypoxia inducible factor 1, alpha subunit
+Hnf1a	MGI:MGI:98504	HNF1 homeobox A
+Hs6st1	MGI:MGI:1354958	heparan sulfate 6-O-sulfotransferase 1
+Hsd17b2	MGI:MGI:1096386	hydroxysteroid (17-beta) dehydrogenase 2
+Hsf1	MGI:MGI:96238	heat shock factor 1
+Hsp90ab1	MGI:MGI:96247	heat shock protein 90 alpha (cytosolic), class B member 1
+Htra1	MGI:MGI:1929076	HtrA serine peptidase 1
+Igf2	MGI:MGI:96434	insulin-like growth factor 2
+Il10	MGI:MGI:96537	interleukin 10
+Il11ra1	MGI:MGI:107426	interleukin 11 receptor, alpha chain 1
+Itga4	MGI:MGI:96603	integrin alpha 4
+Itgav	MGI:MGI:96608	integrin alpha V
+Junb	MGI:MGI:96647	jun B proto-oncogene
+Kiss1	MGI:MGI:2663985	KiSS-1 metastasis-suppressor
+Krt19	MGI:MGI:96693	keratin 19
+Krt8	MGI:MGI:96705	keratin 8
+Ldoc1	MGI:MGI:2685212	regulator of NFKB signaling
+Lef1	MGI:MGI:96770	lymphoid enhancer binding factor 1
+Lep	MGI:MGI:104663	leptin
+Lhx3	MGI:MGI:102673	LIM homeobox protein 3
+Lhx4	MGI:MGI:101776	LIM homeobox protein 4
+Lif	MGI:MGI:96787	leukemia inhibitory factor
+Llgl2	MGI:MGI:1918843	LLGL2 scribble cell polarity complex component
+Map2k1	MGI:MGI:1346866	mitogen-activated protein kinase kinase 1
+Map3k4	MGI:MGI:1346875	mitogen-activated protein kinase kinase kinase 4
+Mapk1	MGI:MGI:1346858	mitogen-activated protein kinase 1
+Mapk14	MGI:MGI:1346865	mitogen-activated protein kinase 14
+Mapk3	MGI:MGI:1346859	mitogen-activated protein kinase 3
+Mdfi	MGI:MGI:107687	MyoD family inhibitor
+Med1	MGI:MGI:1100846	mediator complex subunit 1
+Met	MGI:MGI:96969	met proto-oncogene
+Mir127	MGI:MGI:2676812	microRNA 127
+Ncoa1	MGI:MGI:1276523	nuclear receptor coactivator 1
+Ncoa3	MGI:MGI:1276535	nuclear receptor coactivator 3
+Ncoa6	MGI:MGI:1929915	nuclear receptor coactivator 6
+Ndp	MGI:MGI:102570	Norrie disease (pseudoglioma) (human)
+Nfe2	MGI:MGI:97308	nuclear factor, erythroid derived 2
+Nodal	MGI:MGI:97359	nodal
+Notch2	MGI:MGI:97364	notch 2
+Nr2f2	MGI:MGI:1352452	nuclear receptor subfamily 2, group F, member 2
+Nsdhl	MGI:MGI:1099438	NAD(P) dependent steroid dehydrogenase-like
+Ovol2	MGI:MGI:1338039	ovo like zinc finger 2
+Pbrm1	MGI:MGI:1923998	polybromo 1
+Pcdh12	MGI:MGI:1855700	protocadherin 12
+Pdgfb	MGI:MGI:97528	platelet derived growth factor, B polypeptide
+Peg10	MGI:MGI:2157785	paternally expressed 10
+Phlda2	MGI:MGI:1202307	pleckstrin homology like domain, family A, member 2
+Pkd1	MGI:MGI:97603	polycystin 1, transient receptor potential channel interacting
+Pkd2	MGI:MGI:1099818	polycystin 2, transient receptor potential cation channel
+Pla2g4a	MGI:MGI:1195256	phospholipase A2, group IVA (cytosolic, calcium-dependent)
+Plac1	MGI:MGI:1926287	placental specific protein 1
+Plcd1	MGI:MGI:97614	phospholipase C, delta 1
+Plcd3	MGI:MGI:107451	phospholipase C, delta 3
+Plg	MGI:MGI:97620	plasminogen
+Plk4	MGI:MGI:101783	polo like kinase 4
+Ppard	MGI:MGI:101884	peroxisome proliferator activator receptor delta
+Pparg	MGI:MGI:97747	peroxisome proliferator activated receptor gamma
+Prdm1	MGI:MGI:99655	PR domain containing 1, with ZNF domain
+Prdx3	MGI:MGI:88034	peroxiredoxin 3
+Prl7d1	MGI:MGI:97619	prolactin family 7, subfamily d, member 1
+Ptgis	MGI:MGI:1097156	prostaglandin I2 (prostacyclin) synthase
+Ptgs2	MGI:MGI:97798	prostaglandin-endoperoxide synthase 2
+Ptn	MGI:MGI:97804	pleiotrophin
+Rbm15	MGI:MGI:2443205	RNA binding motif protein 15
+Rbpj	MGI:MGI:96522	recombination signal binding protein for immunoglobulin kappa J region
+Rps6	MGI:MGI:98159	ribosomal protein S6
+Rspo3	MGI:MGI:1920030	R-spondin 3
+Rtcb	MGI:MGI:106379	RNA 2',3'-cyclic phosphate and 5'-OH ligase
+Rtl1	MGI:MGI:2656842	retrotransposon Gaglike 1
+Rxra	MGI:MGI:98214	retinoid X receptor alpha
+Rxrb	MGI:MGI:98215	retinoid X receptor beta
+Senp2	MGI:MGI:1923076	SUMO/sentrin specific peptidase 2
+Serpine1	MGI:MGI:97608	serine (or cysteine) peptidase inhibitor, clade E, member 1
+Setd2	MGI:MGI:1918177	SET domain containing 2
+Slc8a1	MGI:MGI:107956	solute carrier family 8 (sodium/calcium exchanger), member 1
+Snai1	MGI:MGI:98330	snail family zinc finger 1
+Socs3	MGI:MGI:1201791	suppressor of cytokine signaling 3
+Sox15	MGI:MGI:98363	SRY (sex determining region Y)-box 15
+Sp1	MGI:MGI:98372	trans-acting transcription factor 1
+Sp3	MGI:MGI:1277166	trans-acting transcription factor 3
+Spint1	MGI:MGI:1338033	serine protease inhibitor, Kunitz type 1
+Spint2	MGI:MGI:1338031	serine protease inhibitor, Kunitz type 2
+St14	MGI:MGI:1338881	suppression of tumorigenicity 14 (colon carcinoma)
+Stk3	MGI:MGI:1928487	serine/threonine kinase 3
+Stk4	MGI:MGI:1929004	serine/threonine kinase 4
+Syde1	MGI:MGI:1918959	synapse defective 1, Rho GTPase, homolog 1 (C. elegans)
+Syna	MGI:MGI:2684898	syncytin a
+Synb	MGI:MGI:3045308	syncytin b
+Taf10	MGI:MGI:1346320	TATA-box binding protein associated factor 10
+Tcf23	MGI:MGI:1934960	transcription factor 23
+Tex19.1	MGI:MGI:1920929	testis expressed gene 19.1
+Tex19.2	MGI:MGI:1918206	testis expressed gene 19.2
+Tfeb	MGI:MGI:103270	transcription factor EB
+Tmed2	MGI:MGI:1929269	transmembrane p24 trafficking protein 2
+Tppp3	MGI:MGI:1915221	tubulin polymerization-promoting protein family member 3
+Trim28	MGI:MGI:109274	tripartite motif-containing 28
+Ttpa	MGI:MGI:1354168	tocopherol (alpha) transfer protein
+Vash1	MGI:MGI:2442543	vasohibin 1
+Vash2	MGI:MGI:2444826	vasohibin 2
+Vcam1	MGI:MGI:98926	vascular cell adhesion molecule 1
+Vwf	MGI:MGI:98941	Von Willebrand factor
+Wnt2	MGI:MGI:98954	wingless-type MMTV integration site family, member 2
+Wnt7b	MGI:MGI:98962	wingless-type MMTV integration site family, member 7B
+Xist	MGI:MGI:98974	inactive X specific transcripts
+Zfat	MGI:MGI:2681865	zinc finger and AT hook domain containing
+Zfp36l1	MGI:MGI:107946	zinc finger protein 36, C3H type-like 1
+Zfp568	MGI:MGI:2142347	zinc finger protein 568

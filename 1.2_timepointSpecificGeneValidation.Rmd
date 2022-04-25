@@ -57,6 +57,7 @@ summ <- function(trans_cluster, tpm2=tpm2) {
   return(summary)
 }
 ```
+
 ```{r}
 plotClus <- function(summary, title){
   ascl2 <- subset(summary, summary$ext_gene == "Ascl2") #e7.5
@@ -145,7 +146,7 @@ library("RclusTool")
 set.seed(123)
 sim <- computeGaussianSimilarity(tpm2, 1)
 res <- spectralClustering(sim, K=3)
-trans_cluster_sc <- data_frame(row.names(tpm2), res$label)
+trans_cluster_sc <- data.frame(row.names(tpm2), res$label)
 colnames(trans_cluster_sc) <- c("name", "value")
 ```
 Plot of transcripts: <br>
@@ -208,7 +209,7 @@ dim(epcSpt[epcSpt$ens_gene %in% e9.5hier$ens_gene,])
 ```
 Chorioallantoic attachment markers: <br>
 ```{r}
-chorioAll <- read.table("Z:/hhvu/Project1_2/RNA-seq/Documentation/20210701_newSpecificity-codeCheck/0_e8.5_chorioallantoicAttachment.txt", header = F)
+chorioAll <- read.table("Files/0_e8.5_chorioallantoicAttachment.txt", header = F)
 chorioAll <- dplyr::left_join(chorioAll, t2g[,2:3], by = c("V1" = "ext_gene"))
 chorioAll <- dplyr::distinct(chorioAll)
 
