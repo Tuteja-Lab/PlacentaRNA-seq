@@ -31,6 +31,7 @@ library("tximport")
 t2g <- read.table("Files/t2g.txt", header = T, sep = "\t")
 
 ###import count files
+<<<<<<< Updated upstream
 #dir <- "Z:/hhvu/Project1_2/RNA-seq/1_kallisto/official/"
 dir <- "/Volumes/geetu-lab/hhvu/Project1_2/RNA-seq/1_kallisto/official/"
 
@@ -39,6 +40,13 @@ sample_id <- sample_id[grep("^S", sample_id)] #remove the unrelated file if ther
 
 #kal_dirs <- file.path(dir, sample_id, "abundance.h5")
 kal_dirs <- file.path(dir, sample_id, "abundance.tsv")
+=======
+dir <- "Z:/hhvu/Project1_2/RNA-seq/1_kallisto/official/"
+sample_id <- dir(file.path(dir))
+sample_id <- sample_id[grep("^S", sample_id)] #remove the unrelated file if there is
+
+kal_dirs <- file.path(dir, sample_id, "abundance.h5")
+>>>>>>> Stashed changes
 
 desc <- read.table("Files/0.0_sampleNameMapping.csv", sep = "\t", header = F)
 desc$condition <- substr(desc$V1, 1, 4)
@@ -47,7 +55,7 @@ desc <- dplyr::mutate(desc, path = kal_dirs)
 desc <- desc[,2:ncol(desc)]
 colnames(desc) <- c("sample", "condition", "path")
 desc <- desc[order(desc$condition), ]
-desc <- subset(desc, !(desc$sample %in% c("S55", "S56"))) #remove sample S55, S56 outlier
+desc <- subset(desc, !(desc$ID %in% c("S55", "S56"))) #remove sample S55, S56 outlier
 
 tpm <- read.table("Files/TPM_allSamples.tsv", header = T)
 tpm <- tpm[order(tpm$target_id),]
@@ -101,7 +109,10 @@ for (i in 1:5) {
   write.table(sub, paste0("Files/GENIE3/kallisto_GENIE3/e9.5_", i, "_KK.tsv"), row.names = F, quote = F, sep = '\t')
 }
 ```
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 ```{r}
 sessionInfo()
 ```

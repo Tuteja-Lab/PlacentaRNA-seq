@@ -192,8 +192,12 @@ library("dplyr")
 set.seed(123)
 
 ###building sample description
+<<<<<<< Updated upstream
 #dir <- "Z:/hhvu/Project1_2/RNA-seq/1_kallisto/official/"
 dir <- "/Volumes/geetu-lab/hhvu/Project1_2/RNA-seq/1_kallisto/official/"
+=======
+dir <- "Z:/hhvu/Project1_2/RNA-seq/1_kallisto/official/"
+>>>>>>> Stashed changes
 sample_id <- dir(file.path(dir))
 sample_id <- sample_id[grep("^S", sample_id)] #remove the unrelated file if there is
 
@@ -481,7 +485,10 @@ write.table(e9.5specific, "Files/e9.5specific_ensGenes_KK.txt", row.names = F, q
 e9.5TFs <- intersect(e9.5specific, TF_cofactors$V1)
 length(e9.5TFs)
 #write.table(e9.5TFs, "Files/e9.5specific_TFensGenes.txt", row.names = F, quote = F)
+<<<<<<< Updated upstream
 write.table(e9.5TFs, "Files/e9.5specific_TFensGenes_KK.txt", row.names = F, quote = F)
+=======
+>>>>>>> Stashed changes
 ```
 ```{r}
 sessionInfo()
