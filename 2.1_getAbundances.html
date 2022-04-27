@@ -178,20 +178,17 @@ pre code {
 t2g &lt;- read.table(&quot;Files/t2g.txt&quot;, header = T, sep = &quot;\t&quot;)
 
 ###import count files
-dir &lt;- &quot;Z:/hhvu/Project1_2/RNA-seq/1_kallisto/official/&quot;
-sample_id &lt;- dir(file.path(dir))
+sample_id &lt;- dir(file.path(&quot;Files/kallisto/&quot;))
 sample_id &lt;- sample_id[grep(&quot;^S&quot;, sample_id)] #remove the unrelated file if there is
 
-kal_dirs &lt;- file.path(dir, sample_id, &quot;abundance.h5&quot;)
+kal_dirs &lt;- file.path(&quot;Z:/hhvu/Project1_2/RNA-seq/PlacentaRNA-seq/Files/kallisto/&quot;, sample_id, &quot;abundance.tsv&quot;)
 
-desc &lt;- read.table(&quot;Files/0.0_sampleNameMapping.csv&quot;, sep = &quot;\t&quot;, header = F)
-desc$condition &lt;- substr(desc$V1, 1, 4)
-desc &lt;- desc[order(desc$V2),]
+desc &lt;- matrix(c(sample_id, &quot;e9.5&quot;, &quot;e8.5&quot;, &quot;e9.5&quot;, &quot;e9.5&quot;, &quot;e9.5&quot;, &quot;e9.5&quot;, &quot;e9.5&quot;, &quot;e7.5&quot;, &quot;e7.5&quot;, &quot;e7.5&quot;, &quot;e7.5&quot;, &quot;e7.5&quot;, &quot;e7.5&quot;, &quot;e8.5&quot;, &quot;e8.5&quot;, &quot;e8.5&quot;, &quot;e8.5&quot;, &quot;e8.5&quot;), nrow = 18, ncol = 2, byrow = FALSE)
+desc &lt;- as.data.frame(desc)
 desc &lt;- dplyr::mutate(desc, path = kal_dirs)
-desc &lt;- desc[,2:ncol(desc)]
 colnames(desc) &lt;- c(&quot;sample&quot;, &quot;condition&quot;, &quot;path&quot;)
 desc &lt;- desc[order(desc$condition), ]
-desc &lt;- subset(desc, !(desc$ID %in% c(&quot;S55&quot;, &quot;S56&quot;))) #remove sample S55, S56 outlier
+desc &lt;- subset(desc, !(desc$sample %in% c(&quot;S55&quot;, &quot;S56&quot;))) #remove sample S55, S56 outlier
 
 tpm &lt;- read.table(&quot;Files/TPM_allSamples.tsv&quot;, header = T)
 tpm &lt;- tpm[order(tpm$target_id),]
@@ -201,7 +198,7 @@ tpm &lt;- tpm[, -which(names(tpm) %in% c(&quot;E7.5_1&quot;, &quot;E9.5_6&quot;)
 tpm[] &lt;- lapply(tpm, function(x) as.numeric(as.character(x)))
 
 #e7.5
-e7.5Files &lt;- subset(desc, (desc$condition %in% c(&quot;E7.5&quot;)))
+e7.5Files &lt;- subset(desc, (desc$condition %in% c(&quot;e7.5&quot;)))
 e7.5 &lt;- read.table(&quot;Files/e7.5specific_trans.txt&quot;, header = F)
 
 keep &lt;- subset(tpm, row.names(tpm) %in% e7.5$V1)
@@ -215,7 +212,7 @@ for (i in 1:5) {
 }
 
 #e8.5
-e8.5Files &lt;- subset(desc, (desc$condition %in% c(&quot;E8.5&quot;)))
+e8.5Files &lt;- subset(desc, (desc$condition %in% c(&quot;e8.5&quot;)))
 e8.5 &lt;- read.table(&quot;Files/e8.5specific_trans.txt&quot;, header = F)
 
 keep &lt;- subset(tpm, row.names(tpm) %in% e8.5$V1)
@@ -229,7 +226,7 @@ for (i in 1:6) {
 }
 
 #e9.5
-e9.5Files &lt;- subset(desc, (desc$condition %in% c(&quot;E9.5&quot;)))
+e9.5Files &lt;- subset(desc, (desc$condition %in% c(&quot;e9.5&quot;)))
 e9.5 &lt;- read.table(&quot;Files/e9.5specific_trans.txt&quot;, header = F)
 
 keep &lt;- subset(tpm, row.names(tpm) %in% e9.5$V1)
@@ -241,29 +238,6 @@ for (i in 1:5) {
   sub &lt;- subset(sub, sub$target_id %in% row.names(keep))
   #write.table(sub, paste0(&quot;Files/GENIE3/kallisto_GENIE3/e9.5_&quot;, i, &quot;.tsv&quot;), row.names = F, quote = F, sep = &#39;\t&#39;)
 }</code></pre>
-<pre class="r"><code>sessionInfo()
-#&gt; R version 4.1.1 (2021-08-10)
-#&gt; Platform: x86_64-w64-mingw32/x64 (64-bit)
-#&gt; Running under: Windows 10 x64 (build 19043)
-#&gt; 
-#&gt; Matrix products: default
-#&gt; 
-#&gt; locale:
-#&gt; [1] LC_COLLATE=English_United States.1252 
-#&gt; [2] LC_CTYPE=English_United States.1252   
-#&gt; [3] LC_MONETARY=English_United States.1252
-#&gt; [4] LC_NUMERIC=C                          
-#&gt; [5] LC_TIME=English_United States.1252    
-#&gt; 
-#&gt; attached base packages:
-#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     
-#&gt; 
-#&gt; loaded via a namespace (and not attached):
-#&gt;  [1] compiler_4.1.1  magrittr_2.0.1  fastmap_1.1.0   cli_3.2.0      
-#&gt;  [5] tools_4.1.1     htmltools_0.5.2 rstudioapi_0.13 yaml_2.2.1     
-#&gt;  [9] jquerylib_0.1.4 stringi_1.7.5   rmarkdown_2.11  knitr_1.36     
-#&gt; [13] stringr_1.4.0   xfun_0.27       digest_0.6.28   rlang_1.0.2    
-#&gt; [17] evaluate_0.14</code></pre>
 
 
 

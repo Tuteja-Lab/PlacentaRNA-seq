@@ -178,15 +178,15 @@ pre code {
 library(&quot;org.Mm.eg.db&quot;)
 
 go &lt;- function(subnetworkGenes) {
-  GO &lt;- enrichGO(gene = subnetworkGenes, OrgDb=org.Mm.eg.db, ont = &quot;BP&quot;, pvalueCutoff = 1, qvalueCutoff = 1, maxGSSize=1000, readable = T, keyType = &quot;ENSEMBL&quot;)
-  res &lt;- as.data.frame(GO@result)
-  res$Rank &lt;- seq(1, nrow(res))
-  res$GeneRatio &lt;- sapply(strsplit(res$GeneRatio, &quot;/&quot;), function(x) as.numeric(x[1])/as.numeric(x[2]))
-  res$BgRatio &lt;- sapply(strsplit(res$BgRatio, &quot;/&quot;), function(x) as.numeric(x[1])/as.numeric(x[2]))
-  res$Fold &lt;- as.numeric(res$GeneRatio)/as.numeric(res$BgRatio)
-  res &lt;- res[res$qvalue &lt;= 0.05 &amp; res$Fold &gt;= 2 &amp; res$Count &gt;= 5,]
+  GO &lt;- enrichGO(gene = subnetworkGenes, OrgDb=org.Mm.eg.db, ont = &quot;BP&quot;, qvalueCutoff = 0.05, maxGSSize=1000, readable = T, keyType = &quot;ENSEMBL&quot;)
+  goSimplify &lt;- GO
+  simplify2 &lt;- as.data.frame(goSimplify)
+  simplify2$GeneRatio &lt;- sapply(strsplit(simplify2$GeneRatio, &quot;/&quot;), function(x) as.numeric(x[1])/as.numeric(x[2]))
+  simplify2$BgRatio &lt;- sapply(strsplit(simplify2$BgRatio, &quot;/&quot;), function(x) as.numeric(x[1])/as.numeric(x[2]))
+  simplify2$Fold &lt;- as.numeric(simplify2$GeneRatio)/as.numeric(simplify2$BgRatio)
+  simplify2 &lt;- simplify2[simplify2$qvalue &lt;= 0.05 &amp; simplify2$Fold &gt;= 2 &amp; simplify2$Count &gt;= 5,]
   
-  return(res)
+  return(simplify2)
 }</code></pre>
 <p>We now run GO analysis for every subnetwork.</p>
 <pre class="r"><code>for (time in c(&quot;e7.5&quot;, &quot;e8.5&quot;, &quot;e9.5&quot;)) {

@@ -30,15 +30,15 @@ library("clusterProfiler")
 library("org.Mm.eg.db")
 
 go <- function(subnetworkGenes) {
-  GO <- enrichGO(gene = subnetworkGenes, OrgDb=org.Mm.eg.db, ont = "BP", pvalueCutoff = 1, qvalueCutoff = 1, maxGSSize=1000, readable = T, keyType = "ENSEMBL")
-  res <- as.data.frame(GO@result)
-  res$Rank <- seq(1, nrow(res))
-  res$GeneRatio <- sapply(strsplit(res$GeneRatio, "/"), function(x) as.numeric(x[1])/as.numeric(x[2]))
-  res$BgRatio <- sapply(strsplit(res$BgRatio, "/"), function(x) as.numeric(x[1])/as.numeric(x[2]))
-  res$Fold <- as.numeric(res$GeneRatio)/as.numeric(res$BgRatio)
-  res <- res[res$qvalue <= 0.05 & res$Fold >= 2 & res$Count >= 5,]
+  GO <- enrichGO(gene = subnetworkGenes, OrgDb=org.Mm.eg.db, ont = "BP", qvalueCutoff = 0.05, maxGSSize=1000, readable = T, keyType = "ENSEMBL")
+  goSimplify <- GO
+  simplify2 <- as.data.frame(goSimplify)
+  simplify2$GeneRatio <- sapply(strsplit(simplify2$GeneRatio, "/"), function(x) as.numeric(x[1])/as.numeric(x[2]))
+  simplify2$BgRatio <- sapply(strsplit(simplify2$BgRatio, "/"), function(x) as.numeric(x[1])/as.numeric(x[2]))
+  simplify2$Fold <- as.numeric(simplify2$GeneRatio)/as.numeric(simplify2$BgRatio)
+  simplify2 <- simplify2[simplify2$qvalue <= 0.05 & simplify2$Fold >= 2 & simplify2$Count >= 5,]
   
-  return(res)
+  return(simplify2)
 }
 ```
 We now run GO analysis for every subnetwork.
@@ -48,19 +48,19 @@ for (time in c("e7.5", "e8.5", "e9.5")) {
     for (i in 1) {
       geneList <- read.table(paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "_TSS.bed"), header = F, sep = "\t")
       goTerms <- go(geneList$V4)
-      save(goTerms, file = paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "BP_filtered.rda")) 
+      #save(goTerms, file = paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "BP_filtered.rda") 
     }
   } else if (time == "e8.5") {
     for (i in 1:3) {
       geneList <- read.table(paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "_TSS.bed"), header = F, sep = "\t")
       goTerms <- go(geneList$V4)
-      save(goTerms, file = paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "BP_filtered.rda"))
+      #save(goTerms, file = paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "BP_filtered.rda") 
     }
   } else {
     for (i in 1:5) {
       geneList <- read.table(paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "_TSS.bed"), header = F, sep = "\t")
       goTerms <- go(geneList$V4)
-      save(goTerms, file = paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "BP_filtered.rda"))
+      #save(goTerms, file = paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "BP_filtered.rda") 
     }
   }
 }
@@ -99,7 +99,7 @@ for (time in c("e7.5", "e8.5", "e9.5")) {
       print(paste0("Number of genes in the ", time, "_", i, "_STRING network is ", length(unique(network$name))))
       print(paste0("Hub genes of the ", time, "_", i, "_STRING network are:"))
       print(all)
-      save(all, file=paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "_hubGenes.rda"))
+      #save(all, file=paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "_hubGenes.rda"))
     }
   } else if (time == "e8.5") {
     for (i in 1) {
@@ -108,7 +108,7 @@ for (time in c("e7.5", "e8.5", "e9.5")) {
       print(paste0("Number of genes in the ", time, "_", i, "_STRING network is ", length(unique(network$name))))
       print(paste0("Hub genes of the ", time, "_", i, "_STRING network are:"))
       print(all)
-      save(all, file=paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "_hubGenes.rda"))
+      #save(all, file=paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "_hubGenes.rda"))
     }
   } else {
     for (i in 1:4) {
@@ -117,7 +117,7 @@ for (time in c("e7.5", "e8.5", "e9.5")) {
       print(paste0("Number of genes in the ", time, "_", i, "_STRING network is ", length(unique(network$name))))
       print(paste0("Hub genes of the ", time, "_", i, "_STRING network are:"))
       print(all)
-      save(all, file=paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "_hubGenes.rda"))
+      #save(all, file=paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "_hubGenes.rda"))
     }
   }
 }
@@ -129,8 +129,7 @@ First, we use `GENIE3` to infer networks. At each timepoint, as inputs for GENIE
 library("tximport")
 library("GENIE3")
 library("dplyr")
-#setwd("Z:/hhvu/Project1_2/RNA-seq/PlacentaRNA-seq/")
-
+setwd("Z:/hhvu/Project1_2/RNA-seq/PlacentaRNA-seq/")
 
 #building transcript names
 t2g <- read.table("Files/t2g.txt", header = T, sep = "\t")
@@ -158,7 +157,7 @@ for (time in c("e7.5", "e8.5", "e9.5")) {
   for (i in 1:3) {
       geneList <- read.table(paste0("Files/GENIE3/", time, "/", time, "_", i, "/", time, "_", i, "_TSS.bed"), header = F, sep = "\t")
       goTerms <- go(geneList$V4)
-      save(goTerms, file = paste0("Files/GENIE3/", time, "/", time, "_", i, "/", time, "_", i, "BP_filtered.rda"))
+      #save(goTerms, file = paste0("Files/GENIE3/", time, "/", time, "_", i, "/", time, "_", i, "BP_filtered.rda") 
   }
 }
 ```
@@ -189,7 +188,7 @@ for (time in c("e7.5", "e8.5", "e9.5")) {
       print(paste0("Number of genes in the ", time, "_", i, "_GENIE3 network is ", length(unique(network$name))))
       print(paste0("Hub genes of the ", time, "_", i, "_GENIE3 network are:"))
       print(all)
-      save(all, file=paste0("Files/GENIE3/", time, "/", time, "_", i, "/", time, "_", i, "_hubGenes.rda"))
+      #save(all, file=paste0("Files/GENIE3/", time, "/", time, "_", i, "/", time, "_", i, "_hubGenes.rda")
     }
   } else if (time == "e8.5") {
     for (i in 2) {
@@ -198,7 +197,7 @@ for (time in c("e7.5", "e8.5", "e9.5")) {
       print(paste0("Number of genes in the ", time, "_", i, "_GENIE3 network is ", length(unique(network$name))))
       print(paste0("Hub genes of the ", time, "_", i, "_GENIE3 network are:"))
       print(all)
-      save(all, file=paste0("Files/GENIE3/", time, "/", time, "_", i, "/", time, "_", i, "_hubGenes.rda"))
+      #save(all, file=paste0("Files/GENIE3/", time, "/", time, "_", i, "/", time, "_", i, "_hubGenes.rda")
     }
   } else {
     for (i in 1:3) {
@@ -207,7 +206,7 @@ for (time in c("e7.5", "e8.5", "e9.5")) {
       print(paste0("Number of genes in the ", time, "_", i, "_GENIE3 network is ", length(unique(network$name))))
       print(paste0("Hub genes of the ", time, "_", i, "_GENIE3 network are:"))
       print(all)
-      save(all, file=paste0("Files/GENIE3/", time, "/", time, "_", i, "/", time, "_", i, "_hubGenes.rda"))
+      #save(all, file=paste0("Files/GENIE3/", time, "/", time, "_", i, "/", time, "_", i, "_hubGenes.rda")
     }
   }
 }
