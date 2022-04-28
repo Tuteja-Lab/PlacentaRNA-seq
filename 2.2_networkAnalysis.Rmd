@@ -31,15 +31,15 @@ library("clusterProfiler")
 library("org.Mm.eg.db")
 
 go <- function(subnetworkGenes) {
-  GO <- enrichGO(gene = subnetworkGenes, OrgDb=org.Mm.eg.db, ont = "BP", qvalueCutoff = 0.05, maxGSSize=1000, readable = T, keyType = "ENSEMBL")
-  goSimplify <- GO
-  simplify2 <- as.data.frame(goSimplify)
-  simplify2$GeneRatio <- sapply(strsplit(simplify2$GeneRatio, "/"), function(x) as.numeric(x[1])/as.numeric(x[2]))
-  simplify2$BgRatio <- sapply(strsplit(simplify2$BgRatio, "/"), function(x) as.numeric(x[1])/as.numeric(x[2]))
-  simplify2$Fold <- as.numeric(simplify2$GeneRatio)/as.numeric(simplify2$BgRatio)
-  simplify2 <- simplify2[simplify2$qvalue <= 0.05 & simplify2$Fold >= 2 & simplify2$Count >= 5,]
+  GO <- enrichGO(gene = subnetworkGenes, OrgDb=org.Mm.eg.db, ont = "BP", pvalueCutoff = 1, qvalueCutoff = 1, maxGSSize=1000, readable = T, keyType = "ENSEMBL")
+  res <- as.data.frame(GO@result)
+  res$Rank <- seq(1, nrow(res))
+  res$GeneRatio <- sapply(strsplit(res$GeneRatio, "/"), function(x) as.numeric(x[1])/as.numeric(x[2]))
+  res$BgRatio <- sapply(strsplit(res$BgRatio, "/"), function(x) as.numeric(x[1])/as.numeric(x[2]))
+  res$Fold <- as.numeric(res$GeneRatio)/as.numeric(res$BgRatio)
+  res <- res[res$qvalue <= 0.05 & res$Fold >= 2 & res$Count >= 5,]
   
-  return(simplify2)
+  return(res)
 }
 ```
 We now run GO analysis for every subnetwork.
@@ -126,7 +126,7 @@ for (time in c("e7.5", "e8.5", "e9.5")) {
 
 ## 2. GENIE3 networks
 First, we use `GENIE3` to infer networks. At each timepoint, as inputs for GENIE3, timepoint-specific transcripts with average TPM at the timepoint >= 5 were aggregated to obtain gene counts with the R package `tximport` (see script `2.1_getAbundance.Rmd` for details how to get the transcript expression as inputs for gene abundance).
-```{r}
+```{r, eval=F}
 library("tximport")
 library("GENIE3")
 library("dplyr")

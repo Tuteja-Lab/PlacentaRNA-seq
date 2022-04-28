@@ -330,7 +330,7 @@ library(&quot;dplyr&quot;)
 set.seed(123)
 
 ###building sample description
-dir &lt;- &quot;Z:/hhvu/Project1_2/RNA-seq/1_kallisto/official/&quot;
+dir &lt;- &quot;/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/1_kallisto/official/&quot;
 sample_id &lt;- dir(file.path(dir))
 sample_id &lt;- sample_id[grep(&quot;^S&quot;, sample_id)] #remove the unrelated file if there is
 
@@ -532,8 +532,8 @@ length(e8.5TFs)
 #&gt; [1] 179
 #write.table(e8.5TFs, &quot;Files/e8.5specific_TFensGenes.txt&quot;, row.names = F, quote = F)</code></pre>
 <pre class="r"><code>#e7.5 specific genes
-e7.5Hier &lt;- read.table(&quot;Z:/hhvu/Project1_2/RNA-seq/2B_hierarchicalClustering/e7.5Group.txt&quot;, header = T)
-e7.5_e7.5vsE9.5 &lt;- read.table(&quot;Z:/hhvu/Project1_2/RNA-seq/2A_sleuth/e7.5_e7.5vse9.5_DEtransGenes.txt&quot;, header = T)
+e7.5Hier &lt;- read.table(&quot;Files/e7.5Group.txt&quot;, header = T)
+e7.5_e7.5vsE9.5 &lt;- read.table(&quot;Files/e7.5_e7.5vse9.5_DEtransGenes.txt&quot;, header = T)
 
 e7.5specificTrans &lt;- setdiff(intersect(e7.5_e7.5vsE9.5$target_id, e7.5Hier$transcripts), e8.5specificTrans)
 length(e7.5specificTrans)
@@ -550,8 +550,8 @@ length(e7.5TFs)
 #&gt; [1] 98
 #write.table(e7.5TFs, &quot;Files/e7.5specific_TFensGenes.txt&quot;, row.names = F, quote = F)</code></pre>
 <pre class="r"><code>#e9.5 specific genes
-e9.5Hier &lt;- read.table(&quot;Z:/hhvu/Project1_2/RNA-seq/2B_hierarchicalClustering/e9.5Group.txt&quot;, header = T)
-e9.5_e7.5vsE9.5 &lt;- read.table(&quot;Z:/hhvu/Project1_2/RNA-seq/2A_sleuth/e9.5_e7.5vse9.5_DEtransGenes.txt&quot;, header = T)
+e9.5Hier &lt;- read.table(&quot;Files/e9.5Group.txt&quot;, header = T)
+e9.5_e7.5vsE9.5 &lt;- read.table(&quot;Files/e9.5_e7.5vse9.5_DEtransGenes.txt&quot;, header = T)
 
 e9.5specificTrans &lt;- setdiff(intersect(e9.5_e7.5vsE9.5$target_id, e9.5Hier$transcripts), e8.5specificTrans)
 length(e9.5specificTrans)
