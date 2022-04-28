@@ -1,0 +1,19 @@
+
+The following have been reloaded with a version change:
+  1) zlib/1.2.11-vhzh5cf => zlib/1.2.11-ldu43ta
+
+Setting options('download.file.method.GEOquery'='auto')
+Setting options('GEOquery.inmemory.gpl'=FALSE)
+0 probes were removed while mapping probes to genes as non-mapped probes or non-uniqely mapped probes
+0 genes were collapsed while mapping genes to most expressed probe
+55273 genes left after collapsing
+Total number of genes is 4990
+The number of genes after filtering is 1413
+Final vector is 
+
+Warning messages:
+1: In if (class(x) == "data.frame") return(as.matrix(x)) :
+  the condition has length > 1 and only the first element will be used
+2: In if (class(x) == "matrix") return(x) :
+  the condition has length > 1 and only the first element will be used
+3: `guides(<scale> = FALSE)` is deprecated. Please use `guides(<scale> = "none")` instead. 

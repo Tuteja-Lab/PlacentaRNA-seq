@@ -1,0 +1,118 @@
+---
+title: "RNA-seq Mouse Placenta"
+author: "Ha T. H. Vu"
+output: html_document
+---
+  
+```{r setup, include=FALSE}
+options(max.print = "75")
+knitr::opts_chunk$set(
+  echo = TRUE,
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "Files/",
+  fig.width = 8,
+  prompt = FALSE,
+  tidy = FALSE,
+  message = FALSE,
+  warning = TRUE
+)
+knitr::opts_knit$set(width = 75)
+```
+
+Documentation for the analysis of mouse placental RNA-seq data at e7.5, e8.5 and e9.5.
+
+This script is to get gene inputs for `GENIE3` analysis. In particular, at each timepoint, as inputs for GENIE3, timepoint-specific *transcripts* with average TPM at the timepoint >= 5 were aggregated to obtain gene counts with the R package tximport (version 1.14.2; countsFromAbundance = lengthScaledTPM). This script is to get the timepoint-specific *transcripts* with average TPM at the timepoint >= 5. The results of this script will be used for script `2.2_networkAnalysis.Rmd`.
+
+```{r, eval = F}
+library("tximport")
+
+###building transcript names
+t2g <- read.table("Files/t2g.txt", header = T, sep = "\t")
+
+###import count files
+<<<<<<< Updated upstream
+#dir <- "Z:/hhvu/Project1_2/RNA-seq/1_kallisto/official/"
+dir <- "/Volumes/geetu-lab/hhvu/Project1_2/RNA-seq/1_kallisto/official/"
+
+sample_id <- dir(file.path(dir))
+sample_id <- sample_id[grep("^S", sample_id)] #remove the unrelated file if there is
+
+#kal_dirs <- file.path(dir, sample_id, "abundance.h5")
+kal_dirs <- file.path(dir, sample_id, "abundance.tsv")
+=======
+dir <- "Z:/hhvu/Project1_2/RNA-seq/1_kallisto/official/"
+sample_id <- dir(file.path(dir))
+sample_id <- sample_id[grep("^S", sample_id)] #remove the unrelated file if there is
+
+kal_dirs <- file.path(dir, sample_id, "abundance.h5")
+>>>>>>> Stashed changes
+
+desc <- read.table("Files/0.0_sampleNameMapping.csv", sep = "\t", header = F)
+desc$condition <- substr(desc$V1, 1, 4)
+desc <- desc[order(desc$V2),]
+desc <- dplyr::mutate(desc, path = kal_dirs)
+desc <- desc[,2:ncol(desc)]
+colnames(desc) <- c("sample", "condition", "path")
+desc <- desc[order(desc$condition), ]
+desc <- subset(desc, !(desc$ID %in% c("S55", "S56"))) #remove sample S55, S56 outlier
+
+tpm <- read.table("Files/TPM_allSamples.tsv", header = T)
+tpm <- tpm[order(tpm$target_id),]
+row.names(tpm) <- tpm$target_id
+tpm <- tpm[,-c(1, 20, 21)]
+tpm <- tpm[, -which(names(tpm) %in% c("E7.5_1", "E9.5_6"))]
+tpm[] <- lapply(tpm, function(x) as.numeric(as.character(x)))
+
+#e7.5
+e7.5Files <- subset(desc, (desc$condition %in% c("E7.5")))
+e7.5 <- read.table("Files/e7.5specific_trans.txt", header = F)
+
+keep <- subset(tpm, row.names(tpm) %in% e7.5$V1)
+keep$E7.5_mean <- rowMeans(keep[,c("E7.5_2", "E7.5_3", "E7.5_4", "E7.5_5", "E7.5_6")])
+keep <- subset(keep, keep$E7.5_mean >= 5)
+
+for (i in 1:5) {
+  sub <- read.table(e7.5Files$path[i], header = T)
+  sub <- subset(sub, sub$target_id %in% row.names(keep))
+  #write.table(sub, paste0("Files/GENIE3/kallisto_GENIE3/e7.5_", i+1, ".tsv"), row.names = F, quote = F, sep = '\t')
+  write.table(sub, paste0("Files/GENIE3/kallisto_GENIE3/e7.5_", i+1, "_KK.tsv"), row.names = F, quote = F, sep = '\t')
+}
+
+#e8.5
+e8.5Files <- subset(desc, (desc$condition %in% c("E8.5")))
+e8.5 <- read.table("Files/e8.5specific_trans.txt", header = F)
+
+keep <- subset(tpm, row.names(tpm) %in% e8.5$V1)
+keep$E8.5_mean <- rowMeans(keep[,c("E8.5_1", "E8.5_2", "E8.5_3", "E8.5_4", "E8.5_5", "E8.5_6")])
+keep <- subset(keep, keep$E8.5_mean >= 5)
+
+for (i in 1:6) {
+  sub <- read.table(e8.5Files$path[i], header = T)
+  sub <- subset(sub, sub$target_id %in% row.names(keep))
+  #write.table(sub, paste0("Files/GENIE3/kallisto_GENIE3/e8.5_", i, ".tsv"), row.names = F, quote = F, sep = '\t')
+  write.table(sub, paste0("Files/GENIE3/kallisto_GENIE3/e8.5_", i, "_KK.tsv"), row.names = F, quote = F, sep = '\t')
+}
+
+#e9.5
+e9.5Files <- subset(desc, (desc$condition %in% c("E9.5")))
+e9.5 <- read.table("Files/e9.5specific_trans.txt", header = F)
+
+keep <- subset(tpm, row.names(tpm) %in% e9.5$V1)
+keep$e9.5_mean <- rowMeans(keep[,c("E9.5_1", "E9.5_2", "E9.5_3", "E9.5_4", "E9.5_5")])
+keep <- subset(keep, keep$e9.5_mean >= 5)
+
+for (i in 1:5) {
+  sub <- read.table(e9.5Files$path[i], header = T)
+  sub <- subset(sub, sub$target_id %in% row.names(keep))
+  #write.table(sub, paste0("Files/GENIE3/kallisto_GENIE3/e9.5_", i, ".tsv"), row.names = F, quote = F, sep = '\t')
+  write.table(sub, paste0("Files/GENIE3/kallisto_GENIE3/e9.5_", i, "_KK.tsv"), row.names = F, quote = F, sep = '\t')
+}
+```
+
+```{r}
+sink("2.1_sessionInfo.txt")
+sessionInfo()
+sink()
+sessionInfo()
+```

@@ -1,0 +1,225 @@
+---
+title: "RNA-seq Mouse Placenta"
+author: "Ha T. H. Vu"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+options(max.print = "75")
+knitr::opts_chunk$set(
+  echo = TRUE,
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "Files/",
+  fig.width = 8,
+  prompt = FALSE,
+  tidy = FALSE,
+  message = FALSE,
+  warning = TRUE
+)
+knitr::opts_knit$set(width = 75)
+```
+
+Documentation for the analysis of mouse placental RNA-seq data at e7.5, e8.5 and e9.5.
+
+## 1. PlacentaCellEnrich
+We use the PlacentaCellEnrich (PCE) tool to annotate timepoint-specific genes with placental cell types. The following code was adapted from the R package `TissueEnrich` to carry out PCE analysis. Load the necessary files and define the following function for the analysis.
+```{r}
+library(TissueEnrich)
+library(ggplot2)
+
+load(file = "Files/combine-test-expression1.Rdata")
+
+mouseHumanOrthologs<-dataset$GRCH38$mouseHumanOrthologs
+humanGeneMapping<-dataset$GRCH38$humanGeneMapping
+
+#For VentoTormo Data
+d <- dataset$PlacentaDeciduaBloodData
+data <- d$expressionData
+cellDetails <- d$cellDetails
+organism <- "Mouse"
+
+runPCE <- function(inputGenes, nameType = c("Gene.name", "Gene.stable.ID")) {
+  if (nameType == "Gene.name") {
+    humanOrthologs <- mouseHumanOrthologs[mouseHumanOrthologs$Gene.name %in% toupper(inputGenes),]
+  } else {
+    humanOrthologs <- mouseHumanOrthologs[mouseHumanOrthologs$Gene.stable.ID %in% inputGenes,]
+  }
+  inputGenes <- humanOrthologs$Human.gene.stable.ID
+  expressionData <- data[intersect(row.names(data), mouseHumanOrthologs$Human.gene.stable.ID),]
+  se <- SummarizedExperiment(assays = SimpleList(as.matrix(expressionData)), rowData = row.names(expressionData), colData = colnames(expressionData))
+  cellSpecificGenesExp <- teGeneRetrieval(se, expressedGeneThreshold = 1)
+  print(paste("Number of input genes found is", length(inputGenes)))
+  gs <- GeneSet(geneIds=toupper(inputGenes))
+  output2 <- teEnrichmentCustom(gs, cellSpecificGenesExp)
+  enrichmentOutput <- setNames(data.frame(assay(output2[[1]]), row.names = rowData(output2[[1]])[,1]), colData(output2[[1]])[,1])
+  row.names(cellDetails) <- cellDetails$RName
+  enrichmentOutput$Tissue <- cellDetails[row.names(enrichmentOutput), "CellName"]
+  
+  return(enrichmentOutput)
+}
+
+plotPCE <- function(enrichmentOutput, networkName) {
+  p <- ggplot(enrichmentOutput,aes(x=reorder(Tissue,-Log10PValue),y=Log10PValue,
+                                 label = Tissue.Specific.Genes, fill=Tissue))+
+  geom_bar(stat = 'identity')+
+    labs(x='', y = '-LOG10(Adj. P-Value)')+
+    theme_bw()+
+    theme(legend.position='none', plot.margin=unit(c(1,1,1,1),"cm"))+
+    theme(plot.title = element_text(hjust = 0.5,size = 20),axis.title =
+            element_text(size=15))+
+    theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1),
+          panel.grid.major= element_blank(),panel.grid.minor = element_blank())+
+    ggtitle(networkName)
+  
+  return(p)
+}
+```
+
+First, we do cell annotations with timepoint-specific gene groups.
+```{r}
+for (time in c("e7.5", "e8.5", "e9.5")) {
+  file <- read.table(paste0("Files/", time, "specific_ensGenes.txt"), header = F)
+  inputGenes <- file$V1
+  enrichmentOutput <- runPCE(inputGenes, "Gene.stable.ID")
+  print(plotPCE(enrichmentOutput, paste0(time, "-specific Genes")))
+}
+```
+
+Next, we do cell annotations with subnetworks obtained from the previous step. Since this step can be repetitive, we first write a function to load the input genes, then analyze.
+```{r}
+loadInput <- function(type = c("STRING", "GENIE3"), time = c("e7.5", "e8.5", "e9.5"), i) {
+  if (type == "STRING") {
+    file <- read.table(paste0("Files/", type, "/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "_nodeTable.csv"), sep = ",", header = T)
+  } else {
+    file <- read.table(paste0("Files/", type, "/", time, "/", time, "_", i, "/", time, "_", i, "_nodeTable.csv"), sep = ",", header = T)
+  }
+  inputGenes <- file$name
+  
+  return(inputGenes)
+}
+```
+
+Analysis for STRING subnetworks:
+```{r}
+type <- "STRING"
+for (time in c("e7.5", "e8.5", "e9.5")) {
+  opt <- "Gene.name"
+  if (time %in% c("e7.5", "e8.5")) {
+    inputGenes <- loadInput(type, time, 1)
+    name <- paste0(time, "_", 1, "_", type)
+    enrichmentOutput <- runPCE(inputGenes, opt)
+    print(plotPCE(enrichmentOutput, name))
+  } else {
+    for (i in 1:4) {
+      inputGenes <- loadInput(type, time, i)
+      name <- paste0(time, "_", i, "_", type)
+      enrichmentOutput <- runPCE(inputGenes, opt)
+      print(plotPCE(enrichmentOutput, name))
+    }
+  }
+}
+```
+
+Analysis for GENIE3 subnetworks:
+```{r}
+type <- "GENIE3"
+for (time in c("e7.5", "e8.5", "e9.5")) {
+  opt <- "Gene.stable.ID"
+  if (time %in% c("e7.5", "e8.5")) {
+    inputGenes <- loadInput(type, time, 2)
+    name <- paste0(time, "_", 2, "_", type)
+    enrichmentOutput <- runPCE(inputGenes, opt)
+    print(plotPCE(enrichmentOutput, name))
+  } else {
+    for (i in 1:3) {
+      inputGenes <- loadInput(type, time, i)
+      name <- paste0(time, "_", i, "_", type)
+      enrichmentOutput <- runPCE(inputGenes, opt)
+      print(plotPCE(enrichmentOutput, name))
+    }
+  }
+}
+```
+
+## 2. Placenta Ontology
+For some networks (`e7.5_1_STRING`, `e9.5_1_STRING`, `e9.5_3_GENIE3`), we do not observe any enrichment for fetal placental cells, possibly because not all genes in the networks are annotated in the background dataset which we used in PCE. Therefore, we also used Placenta Ontology, which carries out enrichment tests based on different background sources than those used in PCE. We obtained placenta ontology GMT file from Naismith et al., 2021 and uploaded the file to the WEB-based GEne SeT AnaLysis Toolkit (www.webgestalt.org) as a functional database. Input gene lists are the human orthologs of our subnetworks. <br>
+We first obtain human orthologs of genes:
+```{r, eval=F}
+type <- "STRING"
+for (time in c("e7.5", "e8.5", "e9.5")) {
+  if (time %in% c("e7.5", "e8.5")) {
+    inputGenes <- loadInput(type, time, 1)
+    name <- paste0(time, "_", 1, "_", type)
+    humanOrthologs <- mouseHumanOrthologs[mouseHumanOrthologs$Gene.name %in% toupper(inputGenes),]
+    write.table(humanOrthologs$Human.gene.name, paste0("Files/PlacentaOntology/", name, ".txt"), quote = F, row.names = F)
+  } else {
+    for (i in 1:4) {
+      inputGenes <- loadInput(type, time, i)
+      name <- paste0(time, "_", i, "_", type)
+      humanOrthologs <- mouseHumanOrthologs[mouseHumanOrthologs$Gene.name %in% toupper(inputGenes),]
+      write.table(humanOrthologs$Human.gene.name, paste0("Files/PlacentaOntology/", name, ".txt"), quote = F, row.names = F)
+    }
+  }
+}
+```
+```{r, eval=F}
+type <- "GENIE3"
+for (time in c("e7.5", "e8.5", "e9.5")) {
+  if (time %in% c("e7.5", "e8.5")) {
+    inputGenes <- loadInput(type, time, 2)
+    name <- paste0(time, "_", 2, "_", type)
+    humanOrthologs <- mouseHumanOrthologs[mouseHumanOrthologs$Gene.stable.ID %in% inputGenes,]
+    write.table(humanOrthologs$Human.gene.name, paste0("Files/PlacentaOntology/", name, ".txt"), quote = F, row.names = F)
+  } else {
+    for (i in 1:3) {
+      inputGenes <- loadInput(type, time, i)
+      name <- paste0(time, "_", i, "_", type)
+      humanOrthologs <- mouseHumanOrthologs[mouseHumanOrthologs$Gene.stable.ID %in% inputGenes,]
+      write.table(humanOrthologs$Human.gene.name, paste0("Files/PlacentaOntology/", name, ".txt"), quote = F, row.names = F)
+    }
+  }
+}
+```
+Delete header in the gene name files so we can upload the files to WebGestal.
+```{BASH, eval = F}
+cd Files/PlacentaOntology
+for i in *; do tail -n +2 $i > temp; mv temp $i; done
+```
+After obtaining the results of Placenta Ontology, load them here to plot. We will show results of `e7.5_1_STRING`, `e9.5_1_STRING`, `e9.5_3_GENIE3` here.
+```{r}
+plotPO <- function(poResults, networkName) {
+  p <- ggplot(poResults,aes(x=reorder(geneSet,-log10(FDR)),y=-log10(FDR),
+                                 label = geneSet, fill=geneSet))+
+  geom_bar(stat = 'identity')+
+    labs(x='', y = '-LOG10(FDR)')+
+    theme_bw()+
+    theme(legend.position='none')+
+    theme(plot.title = element_text(hjust = 0.5, size = 20),axis.title =
+            element_text(size=15))+
+    theme(panel.grid.major= element_blank(),panel.grid.minor = element_blank())+
+    coord_flip()+
+    ggtitle(networkName)
+  
+  return(p)
+}
+```
+```{r, eval=F}
+l <- list.files(path = "Files/PlacentaOntology/", pattern = "results")
+for (i in l) {
+  f <- read.table(paste0("Files/PlacentaOntology/", i), header = T, sep = "\t")
+  print(plotPO(f, gsub("_results.txt", "", i)))
+}
+```
+
+This code is to plot every network's results.
+```{r}
+for (i in c("e7.5_1_STRING_results.txt", "e9.5_1_STRING_results.txt", "e9.5_3_GENIE3_results.txt")) {
+  f <- read.table(paste0("Files/PlacentaOntology/", i), header = T, sep = "\t")
+  print(plotPO(f, gsub("_results.txt", "", i)))
+}
+```
+
+```{r}
+sessionInfo()
+```

@@ -1,0 +1,219 @@
+---
+title: "RNA-seq Mouse Placenta"
+author: "Ha T. H. Vu"
+output: html_document
+---
+  
+```{r setup, include=FALSE}
+options(max.print = "75")
+knitr::opts_chunk$set(
+  echo = TRUE,
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "Files/",
+  fig.width = 8,
+  prompt = FALSE,
+  tidy = FALSE,
+  message = FALSE,
+  warning = TRUE
+)
+knitr::opts_knit$set(width = 75)
+```
+
+Documentation for the analysis of mouse placental RNA-seq data at e7.5, e8.5 and e9.5.
+
+## 1. STRINGdb network analysis:
+To obtain networks from STRING, use https://string-db.org/, then upload the lists of interested genes. After obtaining the largest connected component, use GLay algorithm in Cytoscape to subcluster the networks and obtain centralities. <br>
+After getting each subnetwork, we look at their functional analysis to determine the relevance of the networks with package `clusterProfiler`. The following function is to run the GO analysis.
+```{r, eval=F}
+library("clusterProfiler")
+library("org.Mm.eg.db")
+
+go <- function(subnetworkGenes) {
+  GO <- enrichGO(gene = subnetworkGenes, OrgDb=org.Mm.eg.db, ont = "BP", pvalueCutoff = 1, qvalueCutoff = 1, maxGSSize=1000, readable = T, keyType = "ENSEMBL")
+  res <- as.data.frame(GO@result)
+  res$Rank <- seq(1, nrow(res))
+  res$GeneRatio <- sapply(strsplit(res$GeneRatio, "/"), function(x) as.numeric(x[1])/as.numeric(x[2]))
+  res$BgRatio <- sapply(strsplit(res$BgRatio, "/"), function(x) as.numeric(x[1])/as.numeric(x[2]))
+  res$Fold <- as.numeric(res$GeneRatio)/as.numeric(res$BgRatio)
+  res <- res[res$qvalue <= 0.05 & res$Fold >= 2 & res$Count >= 5,]
+  
+  return(res)
+}
+```
+We now run GO analysis for every subnetwork.
+```{r, eval=F}
+for (time in c("e7.5", "e8.5", "e9.5")) {
+  if (time == "e7.5") {
+    for (i in 1) {
+      geneList <- read.table(paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "_TSS.bed"), header = F, sep = "\t")
+      goTerms <- go(geneList$V4)
+      save(goTerms, file = paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "BP_filtered.rda")) 
+    }
+  } else if (time == "e8.5") {
+    for (i in 1:3) {
+      geneList <- read.table(paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "_TSS.bed"), header = F, sep = "\t")
+      goTerms <- go(geneList$V4)
+      save(goTerms, file = paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "BP_filtered.rda"))
+    }
+  } else {
+    for (i in 1:5) {
+      geneList <- read.table(paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "_TSS.bed"), header = F, sep = "\t")
+      goTerms <- go(geneList$V4)
+      save(goTerms, file = paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "BP_filtered.rda"))
+    }
+  }
+}
+```
+We started out with one subnetwork from the largest connected component of e7.5, three of e8.5 and fave of e9.5. After looking at the GO terms, we can narrow down to focus on some particular networks (`e7.5_1_STRING`, `e8.5_1_STRING`, `e9.5_1_STRING`, `e9.5_2_STRING`, `e9.5_3_STRING`, and `e9.5_4_STRING`). We then get the hub genes,  defined to be nodes that have degree, betweenness and closeness centralities in 90th quantile in their subnetworks. The following code is to obtain hub genes:
+```{r}
+library("tidyverse")
+t2g <- read.table("Files/t2g.txt", header = T, sep = "\t")
+
+#function to analyze STRING networks
+hubSFunc <- function(network) {
+  network <- inner_join(network, nameMap[,c("queryItem", "preferredName")], by = c("name" = "preferredName"))
+  network <- inner_join(network, t2g[,2:3], by = c("queryItem" = "ens_gene"))
+  network <- distinct(network)
+  network <- subset(network, network$queryItem %in% coordinates$V4)
+  #network analysis
+  topDegree <- subset(network, network$Degree > quantile(network$Degree, 0.9))
+  topCloseness <- subset(network, network$ClosenessCentrality > quantile(network$ClosenessCentrality, 0.9)) 
+  topBetweenness <- subset(network, network$BetweennessCentrality > quantile(network$BetweennessCentrality, 0.9)) 
+
+  all <- intersect(intersect(topDegree$ext_gene, topCloseness$ext_gene), topBetweenness$ext_gene)
+  return(all)
+}
+```
+Now we get hub genes for each subnetwork of interest.
+```{r}
+#load networks
+for (time in c("e7.5", "e8.5", "e9.5")) {
+  coordinates <- read.table(paste0("Files/", time, "specific_TSS.bed"), header = F, sep = "\t")
+  nameMap <- read.table(paste0("Files/STRING/", time, "/", time, "_string_mapping.tsv"), sep = "\t", quote = "", header = F)
+  colnames(nameMap) <- c("queryIndex", "queryItem",	"stringId",	"preferredName",	"annotation")
+  if (time == "e7.5") {
+    for (i in 1) {
+      network <- read.table(paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "_nodeTable.csv"), sep = ",", header = T)
+      all <- hubSFunc(network)
+      print(paste0("Number of genes in the ", time, "_", i, "_STRING network is ", length(unique(network$name))))
+      print(paste0("Hub genes of the ", time, "_", i, "_STRING network are:"))
+      print(all)
+      save(all, file=paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "_hubGenes.rda"))
+    }
+  } else if (time == "e8.5") {
+    for (i in 1) {
+      network <- read.table(paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "_nodeTable.csv"), sep = ",", header = T)
+      all <- hubSFunc(network)
+      print(paste0("Number of genes in the ", time, "_", i, "_STRING network is ", length(unique(network$name))))
+      print(paste0("Hub genes of the ", time, "_", i, "_STRING network are:"))
+      print(all)
+      save(all, file=paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "_hubGenes.rda"))
+    }
+  } else {
+    for (i in 1:4) {
+      network <- read.table(paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "_nodeTable.csv"), sep = ",", header = T)
+      all <- hubSFunc(network)
+      print(paste0("Number of genes in the ", time, "_", i, "_STRING network is ", length(unique(network$name))))
+      print(paste0("Hub genes of the ", time, "_", i, "_STRING network are:"))
+      print(all)
+      save(all, file=paste0("Files/STRING/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "_hubGenes.rda"))
+    }
+  }
+}
+```
+
+## 2. GENIE3 networks
+First, we use `GENIE3` to infer networks. At each timepoint, as inputs for GENIE3, timepoint-specific transcripts with average TPM at the timepoint >= 5 were aggregated to obtain gene counts with the R package `tximport` (see script `2.1_getAbundance.Rmd` for details how to get the transcript expression as inputs for gene abundance).
+```{r}
+library("tximport")
+library("GENIE3")
+library("dplyr")
+
+#building transcript names
+t2g <- read.table("Files/t2g.txt", header = T, sep = "\t")
+
+for (time in c("e7.5", "e8.5", "e9.5")) {
+  sample <- list.files(path="Files/GENIE3/kallisto_GENIE3", pattern = time)
+  files <- file.path("Files/GENIE3/kallisto_GENIE3/", sample)
+  kallisto.tsv <- tximport(files, type = "kallisto", tx2gene = t2g, ignoreAfterBar = TRUE, countsFromAbundance="lengthScaledTPM")
+  exprMatr <- as.matrix(kallisto.tsv$counts)
+  exprMatr <- t(scale(t(exprMatr)))
+  regulators <- read.table(paste0("Files/", time, "specific_TFensGenes.txt"), header = F)
+  regulators <- regulators[regulators$V1 %in% rownames(exprMatr), "V1"]
+  set.seed(123) # For reproducibility of results
+  weightMat <- GENIE3(exprMatr, regulators = as.vector(unique(regulators)))
+  linkList <- getLinkList(weightMat)
+  linkList2 <- getLinkList(weightMat, threshold=quantile(linkList$weight, 0.9))
+  print(time)
+  print(linkList2[1:3,])
+  write.table(linkList2, paste0("Files/GENIE3/", time, "/", time, "_0.9.txt"), row.names = F, quote = F, sep = "\t")
+}
+```
+Similar to STRING network analysis, we carry out GO analysis first to evaluate the biological relevant of the networks. We can use the same function `go()`.
+```{r, eval=F}
+for (time in c("e7.5", "e8.5", "e9.5")) {
+  for (i in 1:3) {
+      geneList <- read.table(paste0("Files/GENIE3/", time, "/", time, "_", i, "/", time, "_", i, "_TSS.bed"), header = F, sep = "\t")
+      goTerms <- go(geneList$V4)
+      save(goTerms, file = paste0("Files/GENIE3/", time, "/", time, "_", i, "/", time, "_", i, "BP_filtered.rda"))
+  }
+}
+```
+We identified `e7.5_2_GENIE3`, `e8.5_2_GENIE3`, `e9.5_1_GENIE3`, `e9.5_2_GENIE3` and `e9.5_3_GENIE3` as ones to focus on. Get hub genes for each subnetwork of interest.
+```{r}
+hubGFunc <- function(network) {
+  network <- inner_join(network, t2g[,2:3], by = c("name" = "ens_gene"))
+network <- distinct(network)
+  topDegree <- subset(network, network$Degree > quantile(network$Degree, 0.9))
+  topCloseness <- subset(network, network$ClosenessCentrality > quantile(network$ClosenessCentrality, 0.9)) 
+  topBetweenness <- subset(network, network$BetweennessCentrality > quantile(network$BetweennessCentrality, 0.9)) 
+
+  all <- intersect(intersect(topDegree$ext_gene, topCloseness$ext_gene), topBetweenness$ext_gene)
+  
+  return(all)
+}
+```
+
+```{r}
+library("dplyr")
+t2g <- read.table("Files/t2g.txt", header = T, sep = "\t")
+for (time in c("e7.5", "e8.5", "e9.5")) {
+  coordinates <- read.table(paste0("Files/", time, "specific_TSS.bed"), header = F, sep = "\t")
+  if (time == "e7.5") {
+    for (i in 2) {
+      network <- read.table(paste0("Files/GENIE3/", time, "/", time, "_", i, "/", time, "_", i, "_nodeTable.csv"), sep = ",", header = T)
+      all <- hubGFunc(network)
+      print(paste0("Number of genes in the ", time, "_", i, "_GENIE3 network is ", length(unique(network$name))))
+      print(paste0("Hub genes of the ", time, "_", i, "_GENIE3 network are:"))
+      print(all)
+      save(all, file=paste0("Files/GENIE3/", time, "/", time, "_", i, "/", time, "_", i, "_hubGenes.rda"))
+    }
+  } else if (time == "e8.5") {
+    for (i in 2) {
+      network <- read.table(paste0("Files/GENIE3/", time, "/", time, "_", i, "/", time, "_", i, "_nodeTable.csv"), sep = ",", header = T)
+      all <- hubGFunc(network)
+      print(paste0("Number of genes in the ", time, "_", i, "_GENIE3 network is ", length(unique(network$name))))
+      print(paste0("Hub genes of the ", time, "_", i, "_GENIE3 network are:"))
+      print(all)
+      save(all, file=paste0("Files/GENIE3/", time, "/", time, "_", i, "/", time, "_", i, "_hubGenes.rda"))
+    }
+  } else {
+    for (i in 1:3) {
+      network <- read.table(paste0("Files/GENIE3/", time, "/", time, "_", i, "/", time, "_", i, "_nodeTable.csv"), sep = ",", header = T)
+      all <- hubGFunc(network)
+      print(paste0("Number of genes in the ", time, "_", i, "_GENIE3 network is ", length(unique(network$name))))
+      print(paste0("Hub genes of the ", time, "_", i, "_GENIE3 network are:"))
+      print(all)
+      save(all, file=paste0("Files/GENIE3/", time, "/", time, "_", i, "/", time, "_", i, "_hubGenes.rda"))
+    }
+  }
+}
+```
+```{r}
+sink("2.2_sessionInfo.txt")
+sessionInfo()
+sink()
+
+sessionInfo()
+```

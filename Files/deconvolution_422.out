@@ -1,0 +1,129 @@
+pdf 
+  2 
+   dimension  variance filtered
+1          1 0.9512856    FALSE
+2          2 0.9731496    FALSE
+3          3 0.9800279    FALSE
+4          4 0.9846669    FALSE
+5          5 0.9873158    FALSE
+6          6 0.9896825    FALSE
+7          7 0.9916060    FALSE
+8          8 0.9930940    FALSE
+9          9 0.9944477    FALSE
+10        10 0.9955779    FALSE
+11        11 0.9967033    FALSE
+12        12 0.9975263    FALSE
+13        13 0.9982778    FALSE
+14        14 0.9989515    FALSE
+15        15 0.9994975    FALSE
+16        16 1.0000000    FALSE
+   dimension  variance filtered
+1          1 0.9126590     TRUE
+2          2 0.9681836     TRUE
+3          3 0.9788230     TRUE
+4          4 0.9866495     TRUE
+5          5 0.9901289     TRUE
+6          6 0.9925482     TRUE
+7          7 0.9942438     TRUE
+8          8 0.9955888     TRUE
+9          9 0.9965176     TRUE
+10        10 0.9973392     TRUE
+11        11 0.9980668     TRUE
+12        12 0.9986232     TRUE
+13        13 0.9991012     TRUE
+14        14 0.9994483     TRUE
+15        15 0.9997657     TRUE
+16        16 1.0000000     TRUE
+1 1 1 1 1pdf 
+  2 
+[1] "Apoe"  "Apoa1" "Star"  "Rbp4" 
+  [1] "Ddx1"      "Fem1b"     "Rrp15"     "Casc3"     "Dcun1d1"   "Msh6"     
+  [7] "Utp4"      "Umps"      "Hnrnpab"   "Rbm28"     "Tmpo"      "Twf1"     
+ [13] "Ttll4"     "Prmt3"     "Orc2"      "Apex1"     "Wdr12"     "Gatad2a"  
+ [19] "Impa1"     "Gm9855"    "Npm1"      "Tnpo1"     "Csrp2"     "Tead2"    
+ [25] "Nup37"     "Wdr77"     "Mcm6"      "Cldn4"     "Cand1"     "Zranb2"   
+ [31] "Hells"     "Cebpz"     "Lmnb1"     "Wdr73"     "Pus7"      "Tcp1"     
+ [37] "Tsr1"      "Dek"       "Tfam"      "Hdgf"      "Srrm1"     "Iws1"     
+ [43] "Parp1"     "Fubp1"     "Cstf1"     "Hnrnpa1"   "Ptges3-ps" "Srpk1"    
+ [49] "Denr"      "Supt16"    "Dis3"      "Mapk14"    "Wdr36"     "Rbm34"    
+ [55] "Lsg1"      "Rbm19"     "Racgap1"   "Nedd4"     "Hspbap1"   "Kpna1"    
+ [61] "Xpo5"      "Rcc1"      "Mcm2"      "Znhit6"    "Sae1"      "Ftsj3"    
+ [67] "Gm4739"    "Ecd"       "Prc1"      "Sephs1"    "Bms1"      "Mak16"    
+ [73] "Riok2"     "Anp32e"    "Plk4"      "Paics"     "Zfp106"    "Srcap"    
+ [79] "Ddx21"     "Trnt1"     "Kif20a"    "Polr1a"    "Caprin1"   "Fpgs"     
+ [85] "Nmd3"      "BC005537"  "Utp25"     "Kif11"     "Myef2"     "Ppp1r7"   
+ [91] "Tex10"     "Pwp1"      "Tcf3"      "Tpx2"      "Ddx24"     "Lbr"      
+ [97] "Hmmr"      "Nek2"      "Mpp6"      "Pum2"     
+  [1] "Ssbp4"     "Pecam1"    "Elf5"      "Prl8a9"    "Mif4gd"    "Chd7"     
+  [7] "Efs"       "Rab26os"   "Upp1"      "Arrb2"     "Prl2a1"    "Plet1"    
+ [13] "Snhg20"    "Prl5a1"    "Gjb5"      "Hk2"       "Kctd12"    "Hilpda"   
+ [19] "Asns"      "Efhd2"     "Scin"      "Pla2g12a"  "Gm49172"   "Htra1"    
+ [25] "Cryab"     "Was"       "Jam3"      "Itgb3"     "Myc"       "Spn"      
+ [31] "Hmox1"     "Junb"      "Plac8"     "Trim8"     "A4galt"    "Mpzl2"    
+ [37] "Nfkbiz"    "Cracr2b"   "Mmp9"      "Cd200"     "Ctsl"      "Ptgis"    
+ [43] "Irx2"      "B4galt5"   "Lipg"      "Fam83f"    "Slc38a3"   "Rab8b"    
+ [49] "Egln1"     "Sema3f"    "Sipa1l2"   "Adap1"     "Adm"       "Sema7a"   
+ [55] "Cd47"      "Arhgap22"  "Plau"      "Satb1"     "Ier3"      "Fhl3"     
+ [61] "Pltp"      "Ets2"      "Neu1"      "Irs3"      "Bcat1"     "Pfpl"     
+ [67] "Bst2"      "Adamts9"   "Kdelr3"    "Gne"       "Pam"       "Cts7"     
+ [73] "Dgkd"      "Ascl2"     "Cpm"       "Fth1"      "Ecm1"      "Ceacam9"  
+ [79] "Ero1l"     "Gm13305"   "Fxyd5"     "Mpzl1"     "Tmem132e"  "Serpinb9g"
+ [85] "Jdp2"      "Sdc1"      "S100a13"   "S100a16"   "Pla2g2f"   "Rpia"     
+ [91] "Sema4c"    "Pla2g5"    "Cts8"      "Entpd1"    "Ext1"      "AA467197" 
+ [97] "Pak1"      "Ctla2a"    "AU018091"  "Fam171a1" 
+ [1] "Fblim1"    "Tubg1"     "Pex5"      "Noct"      "Fam57a"    "Lama5"    
+ [7] "Abhd2"     "Dapk3"     "P4ha2"     "Faim"      "Sin3b"     "Hdac6"    
+[13] "Stard10"   "Arvcf"     "Gdpd5"     "Helz"      "Nabp1"     "Llgl2"    
+[19] "Tnfrsf12a" "Ptgr1"     "Rybp"      "Rxra"      "Cyb5r3"    "Por"      
+[25] "Epn3"      "Ints6"     "Tmem120a"  "Mob3a"     "Ftl1"      "Cyp17a1"  
+[31] "Rps3a2"    "Tgm2"      "Ada"       "Tpcn1"     "Gm29084"   "Tead3"    
+[37] "Maged2"    "Crip2"     "Tmem106a"  "Spsb3"     "Bin1"      "Pramef12" 
+[43] "Lpcat1"    "Mgll"      "Tns2"      "Rps3a3"    "Cyp11a1"   "Ncor2"    
+[49] "Pde10a"    "Scarb1"    "Gnas"      "Ubc"       "Atp5g2"    "Unc119"   
+[55] "Prr12"     "Fbxl19"    "Sgce"      "Selenom"   "Tubb2a"    "Prr5"     
+[61] "Rbms2"     "Prl2c2"    "Chchd10"   "Trpv2"     "Fdx1"      "B3gnt7"   
+[67] "Egfl7"     "Elovl1"    "Dbnl"      "Csnk1e"    "Srebf2"    "Rhox6"    
+[73] "Rhox9"     "Lzts2"     "Lamc1"     "Limk2"     "Tor2a"     "Alpl"     
+[79] "Ube2h"     "Serpinb9b" "Ass1"      "Serpinb9d" "Ldlr"     
+ [1] "Fabp3"    "Hba-x"    "Mfge8"    "Prl7d1"   "Fabp5"    "Arf2"    
+ [7] "Sept4"    "Dlk1"     "Crip1"    "Hbb-bh1"  "Hbb-y"    "Batf3"   
+[13] "Stmn1"    "Pparg"    "Gjb2"     "Rnd2"     "Vat1"     "Ldhb"    
+[19] "Cd320"    "Tfeb"     "Cotl1"    "Tfrc"     "Dio3"     "Ucp2"    
+[25] "Slc4a2"   "Mest"     "Fam129b"  "Prl3b1"   "Fn1"      "Prl2c5"  
+[31] "Prl2b1"   "Arhgef6"  "Tpbpa"    "Tle5"     "Tmem150a" "Prdx5"   
+[37] "Atp11a"   "Rtl8a"    "Zfp36l3"  "Gm14593"  "Car4"    
+[1] "Cell group 1"
+[1] "Number of markers specific to e7.5:"
+[1] 0
+[1] "Number of markers specific to e8.5:"
+[1] 1
+[1] "Number of markers specific to e9.5:"
+[1] 1
+[1] "Cell group 2"
+[1] "Number of markers specific to e7.5:"
+[1] 0
+[1] "Number of markers specific to e8.5:"
+[1] 45
+[1] "Number of markers specific to e9.5:"
+[1] 8
+[1] "Cell group 3"
+[1] "Number of markers specific to e7.5:"
+[1] 95
+[1] "Number of markers specific to e8.5:"
+[1] 4
+[1] "Number of markers specific to e9.5:"
+[1] 0
+[1] "Cell group 4"
+[1] "Number of markers specific to e7.5:"
+[1] 0
+[1] "Number of markers specific to e8.5:"
+[1] 10
+[1] "Number of markers specific to e9.5:"
+[1] 66
+[1] "Cell group 5"
+[1] "Number of markers specific to e7.5:"
+[1] 0
+[1] "Number of markers specific to e8.5:"
+[1] 1
+[1] "Number of markers specific to e9.5:"
+[1] 40
