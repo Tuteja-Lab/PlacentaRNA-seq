@@ -170,3 +170,7 @@ for (i in 1:5) {
 [1] "Number of markers specific to e9.5:"
 [1] 40
 ```
+
+```{r}
+sessionInfo()
+```

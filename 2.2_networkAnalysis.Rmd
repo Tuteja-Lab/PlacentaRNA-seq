@@ -20,11 +20,12 @@ knitr::opts_chunk$set(
 knitr::opts_knit$set(width = 75)
 ```
 
-Documentation for the analysis of mouse placental RNA-seq data at e7.5, e8.5 and e9.5.
+Documentation for the analysis of mouse placental RNA-seq data at e7.5, e8.5 and e9.5. <br>
+All analyses in this step were done in R 4.1.1 unless stated otherwise.
 
 ## 1. STRINGdb network analysis:
 To obtain networks from STRING, use https://string-db.org/, then upload the lists of interested genes. After obtaining the largest connected component, use GLay algorithm in Cytoscape to subcluster the networks and obtain centralities. <br>
-After getting each subnetwork, we look at their functional analysis to determine the relevance of the networks with package `clusterProfiler`. The following function is to run the GO analysis.
+After getting each subnetwork, we look at their functional analysis to determine the relevance of the networks with package `clusterProfiler`. The following function is to run the GO analysis. All GO analysis was carried our in R 4.0.2 (see specific package versions in Methods).
 ```{r, eval=F}
 library("clusterProfiler")
 library("org.Mm.eg.db")
@@ -129,7 +130,7 @@ First, we use `GENIE3` to infer networks. At each timepoint, as inputs for GENIE
 library("tximport")
 library("GENIE3")
 library("dplyr")
-setwd("Z:/hhvu/Project1_2/RNA-seq/PlacentaRNA-seq/")
+setwd("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq")
 
 #building transcript names
 t2g <- read.table("Files/t2g.txt", header = T, sep = "\t")

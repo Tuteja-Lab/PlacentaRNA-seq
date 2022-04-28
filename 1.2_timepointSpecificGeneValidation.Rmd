@@ -208,7 +208,7 @@ dim(epcSpt[epcSpt$ens_gene %in% e9.5hier$ens_gene,])
 ```
 Chorioallantoic attachment markers: <br>
 ```{r}
-chorioAll <- read.table("Z:/hhvu/Project1_2/RNA-seq/Documentation/20210701_newSpecificity-codeCheck/0_e8.5_chorioallantoicAttachment.txt", header = F)
+chorioAll <- read.table("Files/0_e8.5_chorioallantoicAttachment.txt", header = F)
 chorioAll <- dplyr::left_join(chorioAll, t2g[,2:3], by = c("V1" = "ext_gene"))
 chorioAll <- dplyr::distinct(chorioAll)
 
@@ -249,3 +249,7 @@ dim(laby[laby$ens_gene %in% e9.5hier$ens_gene,])
 3. M. Hemberger and J. C. Cross, “Genes governing placental development,” vol. 12, no. 4, pp. 162–168, 2001. <br>
 4. D. Hu and J. C. Cross, “Development and function of trophoblast giant cells in the rodent placenta,” Int. J. Dev. Biol., vol. 54, no. 2–3, pp. 341–354, 2010. <br>
 5. J. Rossant, J. C. Cross, and S. Lunenfeld, “Placental Development: Lessons from Mouse Mutants,” vol. 2, no. July, pp. 538–548, 2001. <br>
+
+```{r}
+sessionInfo()
+```

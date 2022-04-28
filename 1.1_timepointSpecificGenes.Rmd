@@ -185,7 +185,7 @@ library("dplyr")
 set.seed(123)
 
 ###building sample description
-dir <- "Z:/hhvu/Project1_2/RNA-seq/1_kallisto/official/"
+dir <- "/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/1_kallisto/official/"
 sample_id <- dir(file.path(dir))
 sample_id <- sample_id[grep("^S", sample_id)] #remove the unrelated file if there is
 
@@ -426,8 +426,8 @@ length(e8.5TFs)
 
 ```{r}
 #e7.5 specific genes
-e7.5Hier <- read.table("Z:/hhvu/Project1_2/RNA-seq/2B_hierarchicalClustering/e7.5Group.txt", header = T)
-e7.5_e7.5vsE9.5 <- read.table("Z:/hhvu/Project1_2/RNA-seq/2A_sleuth/e7.5_e7.5vse9.5_DEtransGenes.txt", header = T)
+e7.5Hier <- read.table("Files/e7.5Group.txt", header = T)
+e7.5_e7.5vsE9.5 <- read.table("Files/e7.5_e7.5vse9.5_DEtransGenes.txt", header = T)
 
 e7.5specificTrans <- setdiff(intersect(e7.5_e7.5vsE9.5$target_id, e7.5Hier$transcripts), e8.5specificTrans)
 length(e7.5specificTrans)
@@ -443,8 +443,8 @@ length(e7.5TFs)
 ```
 ```{r}
 #e9.5 specific genes
-e9.5Hier <- read.table("Z:/hhvu/Project1_2/RNA-seq/2B_hierarchicalClustering/e9.5Group.txt", header = T)
-e9.5_e7.5vsE9.5 <- read.table("Z:/hhvu/Project1_2/RNA-seq/2A_sleuth/e9.5_e7.5vse9.5_DEtransGenes.txt", header = T)
+e9.5Hier <- read.table("Files/e9.5Group.txt", header = T)
+e9.5_e7.5vsE9.5 <- read.table("Files/e9.5_e7.5vse9.5_DEtransGenes.txt", header = T)
 
 e9.5specificTrans <- setdiff(intersect(e9.5_e7.5vsE9.5$target_id, e9.5Hier$transcripts), e8.5specificTrans)
 length(e9.5specificTrans)

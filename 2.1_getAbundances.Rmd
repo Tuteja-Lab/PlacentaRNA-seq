@@ -31,7 +31,7 @@ library("tximport")
 t2g <- read.table("Files/t2g.txt", header = T, sep = "\t")
 
 ###import count files
-dir <- "Z:/hhvu/Project1_2/RNA-seq/1_kallisto/official/"
+dir <- "/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/1_kallisto/official/"
 sample_id <- dir(file.path(dir))
 sample_id <- sample_id[grep("^S", sample_id)] #remove the unrelated file if there is
 

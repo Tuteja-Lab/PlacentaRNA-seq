@@ -159,3 +159,6 @@ dend %>% hang.dendrogram(hang = -1) %>% plot()
 
 Based on the PCA and hierarchical clustering analysis on samples, the sample 1 of E7.5 and 6 of E9.5 did not cluster with their time points, hence identified as outliers. <br>
 
+```{r}
+sessionInfo()
+```
