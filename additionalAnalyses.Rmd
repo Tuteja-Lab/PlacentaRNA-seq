@@ -1,0 +1,549 @@
+---
+title: "RNA-seq Mouse Placenta"
+author: "Ha T. H. Vu"
+output: html_document
+---
+  
+```{r setup, include=FALSE}
+options(max.print = "75")
+knitr::opts_chunk$set(
+  echo = TRUE,
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "Files/",
+  fig.width = 15,
+  prompt = FALSE,
+  tidy = FALSE,
+  message = FALSE,
+  warning = TRUE
+)
+knitr::opts_knit$set(width = 75)
+```
+
+Documentation for the analysis of mouse placental RNA-seq data at e7.5, e8.5 and e9.5.
+
+This is a combination of many additional analyses.
+
+
+```{r}
+mart <- biomaRt::useMart("ensembl", host="http://sep2019.archive.ensembl.org", dataset = "mmusculus_gene_ensembl")
+mm10 <- biomaRt::getBM(attributes = c("ensembl_gene_id", "external_gene_name", "chromosome_name",
+                                      "start_position", "end_position", "strand", "gene_biotype"), mart = mart)
+mm10 <- subset(mm10, mm10$chromosome_name %in% c(seq(1,19), "X", "Y"))
+mm10 <- mm10[order(mm10$chromosome_name),]
+mm10$strand <- ifelse(mm10$strand == "1", "+", "-")
+mm10 <- subset(mm10, mm10$gene_biotype == "protein_coding")
+
+getPromoter <- function(type=c("STRING", "GENIE3"), input) {
+  if (type=="STRING") {
+    newCoor <- mm10[mm10$external_gene_name %in% input,]
+  } else {
+    newCoor <- mm10[mm10$ensembl_gene_id %in% input,]
+  }
+  
+  for (i in seq(from=1, to=dim(newCoor)[1], by=1)) {
+    if (newCoor$strand[i] == "+") {
+      newCoor$end_position[i] = newCoor$start_position[i]
+      newCoor$start_position[i] = newCoor$start_position[i] - 500
+    }
+    else if (newCoor$strand[i] == "-") {
+      newCoor$start_position[i] = newCoor$end_position[i]
+      newCoor$end_position[i] = newCoor$end_position[i] + 500
+    }
+}
+  #manipulate region table
+  newCoor <- cbind(newCoor, a = 0)
+  newCoor <- newCoor[, c(3,4,5,1)]
+  newCoor$chromosome_name <- paste0("chr", newCoor$chromosome_name)
+  
+  return(newCoor)
+}
+```
+
+```{r}
+loadInput <- function(type = c("STRING", "GENIE3"), time = c("e7.5", "e8.5", "e9.5"), i) {
+  if (type == "STRING") {
+    file <- read.table(paste0("Files/", type, "/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "_nodeTable.csv"), sep = ",", header = T)
+  } else {
+    file <- read.table(paste0("Files/", type, "/", time, "/", time, "_", i, "/", time, "_", i, "_nodeTable.csv"), sep = ",", header = T)
+  }
+  inputGenes <- file$name
+  
+  res <- getPromoter(type, inputGenes)
+  return(res)
+}
+```
+
+# MGI for timepoint-specific genes
+```{r, eval=F}
+setwd("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/")
+library("rGREAT")
+
+#specific genes
+for (i in c("e7.5", "e8.5", "e9.5")) {
+  genes <- read.table(paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/", i, "specific_TSS.bed"), header = F)
+  job <- submitGreatJob(genes, species = "mm10", rule = "oneClosest", version = "4")
+  mgi <- getEnrichmentTables(job, ontology = "Mouse Phenotype Single KO")
+  mgi2 <- as.data.frame(mgi$`Mouse Phenotype Single KO`)
+  mgi2 <- mgi2[mgi2$Hyper_Observed_Gene_Hits >= 5 &
+                 mgi2$Hyper_Fold_Enrichment >= 2 &
+                 mgi2$Hyper_Adjp_BH <= 0.05,]
+  write.table(mgi2, paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/additionalAnalyses/", i, "specific_mgi.txt"), quote = F, sep = "\t", row.names = F)
+}
+```
+
+# MGI for STRING networks
+```{r, eval=F}
+type <- "STRING"
+for (time in c("e7.5", "e8.5", "e9.5")) {
+  opt <- "Gene.name"
+  if (time %in% c("e7.5", "e8.5")) {
+    input <- loadInput(type, time, 1)
+    name <- paste0(time, "_", 1, "_", type)
+    job <- submitGreatJob(input, species = "mm10", rule = "oneClosest", version = "4")
+    mgi <- getEnrichmentTables(job, ontology = "Mouse Phenotype Single KO")
+    mgi2 <- as.data.frame(mgi$`Mouse Phenotype Single KO`)
+    mgi2 <- mgi2[mgi2$Hyper_Observed_Gene_Hits >= 5 &
+                   mgi2$Hyper_Fold_Enrichment >= 2 &
+                   mgi2$Hyper_Adjp_BH <= 0.05,]
+    write.table(mgi2, paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/additionalAnalyses/", name, "_mgi.txt"), quote = F, sep = "\t", row.names = F)
+  } else {
+    for (i in 1:4) {
+      input <- loadInput(type, time, i)
+      name <- paste0(time, "_", i, "_", type)
+      job <- submitGreatJob(input, species = "mm10", rule = "oneClosest", version = "4")
+      mgi <- getEnrichmentTables(job, ontology = "Mouse Phenotype Single KO")
+      mgi2 <- as.data.frame(mgi$`Mouse Phenotype Single KO`)
+      mgi2 <- mgi2[mgi2$Hyper_Observed_Gene_Hits >= 5 &
+                     mgi2$Hyper_Fold_Enrichment >= 2 &
+                     mgi2$Hyper_Adjp_BH <= 0.05,]
+      write.table(mgi2, paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/additionalAnalyses/", name, "_mgi.txt"), quote = F, sep = "\t", row.names = F)
+    }
+  }
+}
+```
+
+# MGI for GENIE3 networks
+```{r, eval=F}
+type <- "GENIE3"
+for (time in c("e7.5", "e8.5", "e9.5")) {
+  opt <- "Gene.stable.ID"
+  if (time %in% c("e7.5", "e8.5")) {
+    input <- loadInput(type, time, 2)
+    name <- paste0(time, "_", 2, "_", type)
+    job <- submitGreatJob(input, species = "mm10", rule = "oneClosest", version = "4")
+    mgi <- getEnrichmentTables(job, ontology = "Mouse Phenotype Single KO")
+    mgi2 <- as.data.frame(mgi$`Mouse Phenotype Single KO`)
+    mgi2 <- mgi2[mgi2$Hyper_Observed_Gene_Hits >= 5 &
+                   mgi2$Hyper_Fold_Enrichment >= 2 &
+                   mgi2$Hyper_Adjp_BH <= 0.05,]
+    write.table(mgi2, paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/additionalAnalyses/", name, "_mgi.txt"), quote = F, sep = "\t", row.names = F)
+  } else {
+    for (i in 1:3) {
+      inputGenes <- loadInput(type, time, i)
+      name <- paste0(time, "_", i, "_", type)
+      job <- submitGreatJob(input, species = "mm10", rule = "oneClosest", version = "4")
+      mgi <- getEnrichmentTables(job, ontology = "Mouse Phenotype Single KO")
+      mgi2 <- as.data.frame(mgi$`Mouse Phenotype Single KO`)
+      mgi2 <- mgi2[mgi2$Hyper_Observed_Gene_Hits >= 5 &
+                     mgi2$Hyper_Fold_Enrichment >= 2 &
+                     mgi2$Hyper_Adjp_BH <= 0.05,]
+      write.table(mgi2, paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/additionalAnalyses/", name, "_mgi.txt"), quote = F, sep = "\t", row.names = F)
+    }
+  }
+}
+```
+
+
+
+
+## Different combinations of transcripts
+# transcripts that are up in e7.5 and then down in e8.5 but then up again in e9.5
+```{r}
+g1 <- read.table("Files/e7.5_e7.5vsE8.5_DEtransGenes.txt", header = T)
+g2 <- read.table("Files/e9.5_e8.5vse9.5_DEtransGenes.txt", header = T)
+g <- intersect(g1$ens_gene, g2$ens_gene)
+g_go <- go(g)
+g_go$Description
+
+#Cadm4/Csf1r/Dnaja4/Igfbp3/Il1r1/Rgcc/Tnfrsf14
+
+e7.5 <- read.table("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/e7.5specific_ensGenes.txt", header = F)
+e8.5 <- read.table("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/e8.5specific_ensGenes.txt", header = F)
+e9.5 <- read.table("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/e9.5specific_ensGenes.txt", header = F)
+intersect(g, e7.5$V1)
+mm10[mm10$ensembl_gene_id %in% intersect(g, e7.5$V1), "external_gene_name"]
+intersect(g, e8.5$V1)
+mm10[mm10$ensembl_gene_id %in% intersect(g, e8.5$V1), "external_gene_name"]
+intersect(g, e9.5$V1)
+mm10[mm10$ensembl_gene_id %in% intersect(g, e9.5$V1), "external_gene_name"]
+```
+```{r}
+g1 <- g1[g1$ens_gene %in% g,]
+dim(g1)
+g2 <- g2[g2$ens_gene %in% g,]
+dim(g2)
+
+load("Files/e7.5geneLevelTPM.rda")
+load("Files/e8.5geneLevelTPM.rda")
+load("Files/e9.5geneLevelTPM.rda")
+
+e7.5g <- e7.5abundance[e7.5abundance$ens_gene %in% g, ]
+e7.5g$mean7.5 <- rowMeans(e7.5g[,2:6])
+e8.5g <- e8.5abundance[e8.5abundance$ens_gene %in% g, ]
+e8.5g$mean8.5 <- rowMeans(e8.5g[,2:7])
+e9.5g <- e9.5abundance[e9.5abundance$ens_gene %in% g, ]
+e9.5g$mean9.5 <- rowMeans(e9.5g[,2:6])
+g_all <- cbind(e7.5g[,c(1, 7)], e8.5g[,8], e9.5g[,7])
+dim(g_all)
+length(which(rowSums(g_all[,2:ncol(g_all)]) <= 15))
+g_all[which(rowSums(g_all[,2:ncol(g_all)]) <= 15),]
+mm10[mm10$ensembl_gene_id %in% g_all[which(rowSums(g_all[,2:ncol(g_all)]) <= 15), "ens_gene"], 2]
+```
+Il1r1, Tnfrsf14, Crlf1 and Dnaja4 which made "cell motility" term enriched had "low" expression.
+
+# genes that are exclusive to one timepoint vs those that are in more than one timepoint
+```{r}
+e8.5 <- read.table("Files/e8.5specific_ensGenes.txt", header = F)
+e7.5 <- read.table("Files/e7.5specific_ensGenes.txt", header = F)
+e9.5 <- read.table("Files/e9.5specific_ensGenes.txt", header = F)
+
+trueE7.5 <- setdiff(setdiff(e7.5$V1, e8.5$V1), e9.5$V1)
+length(e7.5$V1)
+length(trueE7.5)
+trueE7.5go <- go(trueE7.5)
+multiE7.5 <- setdiff(e7.5$V1, trueE7.5)
+multiE7.5go <- go(multiE7.5)
+
+trueE8.5 <- setdiff(setdiff(e8.5$V1, e7.5$V1), e9.5$V1)
+length(e8.5$V1)
+length(trueE8.5)
+trueE8.5go <- go(trueE8.5)
+multiE8.5 <- setdiff(e8.5$V1, trueE8.5)
+multiE8.5go <- go(multiE8.5)
+
+trueE9.5 <- setdiff(setdiff(e9.5$V1, e8.5$V1), e7.5$V1)
+length(e9.5$V1)
+length(trueE9.5)
+trueE9.5go <- go(trueE9.5)
+multiE9.5 <- setdiff(e9.5$V1, trueE9.5)
+multiE9.5go <- go(multiE9.5)
+
+multi <- unique(c(multiE7.5, multiE8.5, multiE9.5))
+multi_go <- go(multi)
+
+length(intersect(multiE9.5, e7.5$V1))
+length(mm10[mm10$ensembl_gene_id %in% intersect(multiE9.5, e8.5$V1), "external_gene_name"])
+
+go(intersect(multiE9.5, e8.5$V1))
+```
+
+```{r}
+e7.5multiE9.5 <- e7.5abundance[e7.5abundance$ens_gene %in% multiE9.5, ]
+e7.5multiE9.5$mean7.5 <- rowMeans(e7.5multiE9.5[,2:6])
+e8.5multiE9.5 <- e8.5abundance[e8.5abundance$ens_gene %in% multiE9.5, ]
+e8.5multiE9.5$mean8.5 <- rowMeans(e8.5multiE9.5[,2:7])
+e9.5multiE9.5 <- e9.5abundance[e9.5abundance$ens_gene %in% multiE9.5, ]
+e9.5multiE9.5$mean9.5 <- rowMeans(e9.5multiE9.5[,2:6])
+multiE9.5_exp <- cbind(e7.5multiE9.5[,c(1, 7)], e8.5multiE9.5[,8], e9.5multiE9.5[,7])
+multiE9.5_exp <- inner_join(multiE9.5_exp, mm10[,1:2], by = c("ens_gene" = "ensembl_gene_id"))
+
+hc <- hclust(dist(tpm2, method = "euclidean"), "complete")
+trans_cluster <- cutree(hc, k = 3) %>% enframe()
+
+tpm <- read.table("Files/TPM_allSamples.tsv", header = T)
+tpm <- tpm[, c("target_id", "E7.5_2",    "E7.5_3",    "E7.5_4",    "E7.5_5",    "E7.5_6",
+                "E8.5_1",    "E8.5_2",    "E8.5_3",   "E8.5_4",    "E8.5_5",    "E8.5_6",
+                "E9.5_1",    "E9.5_2",    "E9.5_3",    "E9.5_4",    "E9.5_5",
+                "ens_gene", "ext_gene")]
+tpm <- tpm[tpm$ens_gene %in% intersect(multiE9.5, e8.5$V1),]
+tpm <- inner_join(tpm, trans_cluster, by = c("target_id" = "name")) #but all of genes here are e9.5 and e8.5 specific
+tpm <- tpm[tpm$value %in% c(1, 2),] #1=8.5, 2=9.5
+tpm$mean7.5 <- rowMeans(tpm[,grep("7.5", colnames(tpm))])
+tpm$mean8.5 <- rowMeans(tpm[,grep("8.5", colnames(tpm))])
+tpm$mean9.5 <- rowMeans(tpm[,grep("9.5", colnames(tpm))])
+length(tpm[tpm$mean8.5 > tpm$mean9.5 & tpm$value == 1, "target_id"])
+length(tpm[tpm$value == 1, "target_id"])
+```
+
+
+# Overlapping GENIE3 and STRING networks
+E7.5
+```{r}
+e7.5_1_STRING <- read.table("Files/STRING/e7.5/largestComponent/e7.5_1/e7.5_1_nodeTable.csv", header = T, sep = ",")
+e7.5_2_GENIE3 <- read.table("Files/GENIE3/e7.5/e7.5_2/e7.5_2_nodeTable.csv", header = T, sep = ",")
+e7.5_2_GENIE3 <- inner_join(e7.5_2_GENIE3, mm10[,1:2], by = c("name" = "ensembl_gene_id"))
+c <- intersect(e7.5_1_STRING$shared.name, e7.5_2_GENIE3$external_gene_name)
+load("Files/STRING/e7.5/largestComponent/e7.5_1/e7.5_1_hubGenes.rda")
+intersect(all, c)
+load("Files/GENIE3/e7.5/e7.5_2/e7.5_2_hubGenes.rda")
+intersect(all, c)
+```
+E8.5
+```{r}
+e8.5_1_STRING <- read.table("Files/STRING/e8.5/largestComponent/e8.5_1/e8.5_1_nodeTable.csv", header = T, sep = ",")
+e8.5_2_GENIE3 <- read.table("Files/GENIE3/e8.5/e8.5_2/e8.5_2_nodeTable.csv", header = T, sep = ",")
+e8.5_2_GENIE3 <- inner_join(e8.5_2_GENIE3, mm10[,1:2], by = c("name" = "ensembl_gene_id"))
+c <- intersect(e8.5_1_STRING$shared.name, e8.5_2_GENIE3$external_gene_name)
+length(c)
+c
+load("Files/STRING/e8.5/largestComponent/e8.5_1/e8.5_1_hubGenes.rda")
+intersect(all, c)
+
+load("Files/GENIE3/e8.5/e8.5_2/e8.5_2_hubGenes.rda")
+intersect(all, c)
+```
+
+E9.5
+```{r}
+e9.5_1_STRING <- read.table("Files/STRING/e9.5/largestComponent/e9.5_1/e9.5_1_nodeTable.csv", header = T, sep = ",")
+e9.5_2_STRING <- read.table("Files/STRING/e9.5/largestComponent/e9.5_2/e9.5_2_nodeTable.csv", header = T, sep = ",")
+e9.5_3_STRING <- read.table("Files/STRING/e9.5/largestComponent/e9.5_3/e9.5_3_nodeTable.csv", header = T, sep = ",")
+e9.5_4_STRING <- read.table("Files/STRING/e9.5/largestComponent/e9.5_4/e9.5_4_nodeTable.csv", header = T, sep = ",")
+
+e9.5_1_GENIE3 <- read.table("Files/GENIE3/e9.5/e9.5_1/e9.5_1_nodeTable.csv", header = T, sep = ",")
+e9.5_1_GENIE3 <- inner_join(e9.5_1_GENIE3, mm10[,1:2], by = c("name" = "ensembl_gene_id"))
+e9.5_2_GENIE3 <- read.table("Files/GENIE3/e9.5/e9.5_2/e9.5_2_nodeTable.csv", header = T, sep = ",")
+e9.5_2_GENIE3 <- inner_join(e9.5_2_GENIE3, mm10[,1:2], by = c("name" = "ensembl_gene_id"))
+e9.5_3_GENIE3 <- read.table("Files/GENIE3/e9.5/e9.5_3/e9.5_3_nodeTable.csv", header = T, sep = ",")
+e9.5_3_GENIE3 <- inner_join(e9.5_3_GENIE3, mm10[,1:2], by = c("name" = "ensembl_gene_id"))
+
+c <- intersect(c(e9.5_1_STRING$shared.name, e9.5_2_STRING$shared.name, e9.5_3_STRING$shared.name, e9.5_4_STRING$shared.name), c(e9.5_1_GENIE3$external_gene_name, e9.5_2_GENIE3$external_gene_name, e9.5_3_GENIE3$external_gene_name))
+length(c)
+c
+load("Files/STRING/e9.5/largestComponent/e9.5_1/e9.5_1_hubGenes.rda")
+intersect(all, c)
+load("Files/STRING/e9.5/largestComponent/e9.5_2/e9.5_2_hubGenes.rda")
+intersect(all, c)
+load("Files/STRING/e9.5/largestComponent/e9.5_3/e9.5_3_hubGenes.rda")
+intersect(all, c)
+load("Files/STRING/e9.5/largestComponent/e9.5_4/e9.5_4_hubGenes.rda")
+intersect(all, c)
+load("Files/GENIE3/e9.5/e9.5_1/e9.5_1_hubGenes.rda")
+intersect(all, c)
+load("Files/GENIE3/e9.5/e9.5_2/e9.5_2_hubGenes.rda")
+intersect(all, c)
+load("Files/GENIE3/e9.5/e9.5_3/e9.5_3_hubGenes.rda")
+intersect(all, c)
+```
+
+
+# GO analysis for timepoint specific genes
+```{r}
+library("clusterProfiler")
+library("org.Mm.eg.db")
+
+go <- function(subnetworkGenes) {
+  GO <- enrichGO(gene = subnetworkGenes, OrgDb=org.Mm.eg.db, ont = "BP", qvalueCutoff = 0.05, maxGSSize=1000, readable = T, keyType = "ENSEMBL")
+  goSimplify <- GO
+  simplify2 <- as.data.frame(goSimplify)
+  simplify2$GeneRatio <- sapply(strsplit(simplify2$GeneRatio, "/"), function(x) as.numeric(x[1])/as.numeric(x[2]))
+  simplify2$BgRatio <- sapply(strsplit(simplify2$BgRatio, "/"), function(x) as.numeric(x[1])/as.numeric(x[2]))
+  simplify2$Fold <- as.numeric(simplify2$GeneRatio)/as.numeric(simplify2$BgRatio)
+  simplify2 <- simplify2[simplify2$qvalue <= 0.05 & simplify2$Fold >= 2 & simplify2$Count >= 5,]
+  
+  return(simplify2)
+}
+
+setwd("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/")
+
+#specific genes
+for (i in c("e7.5", "e8.5", "e9.5")) {
+  genes <- read.table(paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/", i, "specific_TSS.bed"), header = F)
+  res <- go(genes$V4)
+  write.table(res, paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/additionalAnalyses/", i, "specific_BP_filtered.txt"), quote = F, sep = "\t", row.names = F)
+}
+
+i<-"e7.5"
+genes <- read.table(paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/", i, "specific_TSS.bed"), header = F)
+res <- go(genes$V4)
+setdiff(trueE7.5go$Description, res$Description)
+setdiff(res$Description, trueE7.5go$Description)
+
+i<-"e8.5"
+genes <- read.table(paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/", i, "specific_TSS.bed"), header = F)
+res <- go(genes$V4)
+setdiff(trueE8.5go$Description, res$Description)
+setdiff(res$Description, trueE8.5go$Description) #only here has labyrinth terms
+
+
+i<-"e9.5"
+genes <- read.table(paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/", i, "specific_TSS.bed"), header = F)
+res <- go(genes$V4)
+setdiff(trueE9.5go$Description, res$Description)
+setdiff(res$Description, trueE9.5go$Description)
+
+```
+
+
+# Test number of random genes that have MGI/GO placental functions
+E7.5 genes in networks
+```{r}
+genes <- read.table("Files/GENIE3/e7.5/e7.5_2/e7.5_2_nodeTable.csv", sep = ",", header = T)
+genes2 <- read.table("Files/STRING/e7.5/largestComponent/e7.5_1/e7.5_1_nodeTable.csv", sep = ",", header = T)
+t2g <- read.table("Files/t2g.txt", header = T)
+allGenes <- unique(t2g[t2g$ens_gene %in% genes$name, "ext_gene"], genes2$name)
+mart <- biomaRt::useMart("ensembl", host="http://sep2019.archive.ensembl.org", dataset = "mmusculus_gene_ensembl")
+mm10 <- biomaRt::getBM(attributes = c("ensembl_gene_id", "external_gene_name", "mgi_id", "gene_biotype"), mart = mart)
+placenta <- read.table("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/hubGeneCuration/MGI_GO_placentaChorioTBtrophec_genes.txt", header = F)
+placenta <- dplyr::inner_join(placenta, mm10, by = c("V1" = "mgi_id"))
+
+load("Files/STRING/e7.5/largestComponent/e7.5_1/e7.5_1_hubGenes.rda")
+temp <- all
+load("Files/GENIE3/e7.5/e7.5_2/e7.5_2_hubGenes.rda")
+all <- c(all, temp)
+
+set.seed(1234)
+t <- 0
+for (i in 1:10000) {
+  s <- sample(allGenes, 17)
+  #print(length(intersect(s, placenta$external_gene_name)))
+  if (length(intersect(s, placenta$external_gene_name)) > length(intersect(all, placenta$external_gene_name))) {
+    t <- t+1
+  }
+}
+t/10000
+```
+
+E8.5 genes in networks
+```{r}
+genes <- read.table("Files/GENIE3/e8.5/e8.5_2/e8.5_2_nodeTable.csv", sep = ",", header = T)
+genes2 <- read.table("Files/STRING/e8.5/largestComponent/e8.5_1/e8.5_1_nodeTable.csv", sep = ",", header = T)
+allGenes <- unique(t2g[t2g$ens_gene %in% genes$name, "ext_gene"], genes2$name)
+
+load("Files/STRING/e8.5/largestComponent/e8.5_1/e8.5_1_hubGenes.rda")
+temp <- all
+load("Files/GENIE3/e8.5/e8.5_2/e8.5_2_hubGenes.rda")
+all <- c(all, temp)
+
+set.seed(1234)
+t <- 0
+for (i in 1:10000) {
+  s <- sample(allGenes, 28)
+  #print(length(intersect(s, placenta$external_gene_name)))
+  if (length(intersect(s, placenta$external_gene_name)) > length(intersect(all, placenta$external_gene_name))) {
+    t <- t+1
+  }
+}
+t/10000
+```
+
+E9.5 genes in networks
+```{r}
+genes <- c()
+for (i in 1:3) {
+  f <- read.table(paste0("Files/GENIE3/e9.5/e9.5_", i, "/e9.5_", i, "_nodeTable.csv"), sep = ",", header = T)
+  genes <- c(genes, f$name)
+}
+
+genes2 <- c()
+for (i in 1:4) {
+  f <- read.table(paste0("Files/STRING/e9.5/largestComponent/e9.5_", i, "/e9.5_", i, "_nodeTable.csv"), sep = ",", header = T)
+  genes2 <- c(genes2, f$name)
+}
+
+allGenes <- unique(t2g[t2g$ens_gene %in% genes, "ext_gene"], genes2)
+
+load("Files/STRING/e9.5/largestComponent/e9.5_1/e9.5_1_hubGenes.rda")
+temp <- all
+load("Files/STRING/e9.5/largestComponent/e9.5_2/e9.5_2_hubGenes.rda")
+temp <- c(all, temp)
+load("Files/STRING/e9.5/largestComponent/e9.5_3/e9.5_3_hubGenes.rda")
+temp <- c(all, temp)
+load("Files/STRING/e9.5/largestComponent/e9.5_4/e9.5_4_hubGenes.rda")
+temp <- c(all, temp)
+load("Files/GENIE3/e9.5/e9.5_1/e9.5_1_hubGenes.rda")
+temp <- c(all, temp)
+load("Files/GENIE3/e9.5/e9.5_2/e9.5_2_hubGenes.rda")
+temp <- c(all, temp)
+load("Files/GENIE3/e9.5/e9.5_3/e9.5_3_hubGenes.rda")
+temp <- c(all, temp)
+all <- temp
+
+set.seed(1234)
+t <- 0
+for (i in 1:10000) {
+  s <- sample(allGenes, 127)
+  #print(length(intersect(s, placenta$external_gene_name)))
+  if (length(intersect(s, placenta$external_gene_name)) > length(intersect(all, placenta$external_gene_name))) {
+    t <- t+1
+  }
+}
+t/10000
+```
+
+All  genes
+```{r}
+allHubs <- read.table("Files/allHubs.txt", header = T)
+length(intersect(allHubs$Name, placenta$V1))
+genes <- c()
+for (i in 1:3) {
+  f <- read.table(paste0("Files/GENIE3/e9.5/e9.5_", i, "/e9.5_", i, "_nodeTable.csv"), sep = ",", header = T)
+  genes <- c(genes, f$name)
+}
+for (i in c("e7.5", "e8.5")) {
+  f <- read.table(paste0("Files/GENIE3/", i, "/", i, "_", 2, "/", i , "_2", "_nodeTable.csv"), sep = ",", header = T)
+  genes <- c(genes, f$name)
+}
+
+genes2 <- c()
+for (i in 1:4) {
+  f <- read.table(paste0("Files/STRING/e9.5/largestComponent/e9.5_", i, "/e9.5_", i, "_nodeTable.csv"), sep = ",", header = T)
+  genes2 <- c(genes2, f$name)
+}
+for (i in c("e7.5", "e8.5")) {
+  f <- read.table(paste0("Files/STRING/", i, "/largestComponent/", i, "_1/", i, "_1_nodeTable.csv"), sep = ",", header = T)
+  genes2 <- c(genes2, f$name)
+}
+
+allGenes <- unique(t2g[t2g$ens_gene %in% genes, "ext_gene"], genes2)
+
+set.seed(1234)
+t <- 0
+for (i in 1:10000) {
+  s <- sample(allGenes, length(allHubs$Name))
+  #print(length(intersect(s, placenta$external_gene_name)))
+  if (length(intersect(s, placenta$external_gene_name)) > length(intersect(allHubs$Name, placenta$external_gene_name))) {
+    t <- t+1
+  }
+}
+t/10000
+```
+
+# How many hub genes are placenta/embryo/development related
+```{r}
+mart <- biomaRt::useMart("ensembl", host="http://sep2019.archive.ensembl.org", dataset = "mmusculus_gene_ensembl")
+mm10 <- biomaRt::getBM(attributes = c("ensembl_gene_id", "external_gene_name", "mgi_id", "gene_biotype"), mart = mart)
+
+allHubs <- read.table("Files/allHubs.txt", header = T)
+placenta <- read.table("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/hubGeneCuration/MGI_GO_placentaChorioTBtrophec_genes.txt", header = F)
+placenta <- dplyr::inner_join(placenta, mm10, by = c("V1" = "mgi_id"))
+embryo <- read.table("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/hubGeneCuration/MGI_GO_embryo_genes.txt", header = F)
+embryo <- dplyr::inner_join(embryo, mm10, by = c("V1" = "mgi_id"))
+development <- read.table("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/hubGeneCuration/MGI_GO_development_genes.txt", header = F)
+development <- dplyr::inner_join(development, mm10, by = c("V1" = "mgi_id"))
+
+length(intersect(allHubs$Name, placenta$external_gene_name))
+length(setdiff(intersect(allHubs$Name, embryo$external_gene_name), placenta$external_gene_name))
+length(setdiff(setdiff(intersect(allHubs$Name, development$external_gene_name), placenta$external_gene_name), embryo$external_gene_name))
+
+intersect(allHubs$Name, placenta$external_gene_name)
+setdiff(intersect(allHubs$Name, embryo$external_gene_name), placenta$external_gene_name)
+setdiff(setdiff(intersect(allHubs$Name, development$external_gene_name), placenta$external_gene_name), embryo$external_gene_name)
+```
+Siah2 is under "multicellular organism development"
+
+```{r}
+load("Files/STRING/e7.5/largestComponent/e7.5_1/e7.5_1_hubGenes.rda")
+temp <- all
+load("Files/GENIE3/e7.5/e7.5_2/e7.5_2_hubGenes.rda")
+all <- c(all, temp)
+
+length(intersect(all, placenta$external_gene_name))
+length(setdiff(intersect(all$Name, embryo$external_gene_name), placenta$external_gene_name))
+length(setdiff(setdiff(intersect(all$Name, development$external_gene_name), placenta$external_gene_name), embryo$external_gene_name))
+
+intersect(allHubs$Name, placenta$external_gene_name)
+setdiff(intersect(allHubs$Name, embryo$external_gene_name), placenta$external_gene_name)
+setdiff(setdiff(intersect(allHubs$Name, development$external_gene_name), placenta$external_gene_name), embryo$external_gene_name)
+```

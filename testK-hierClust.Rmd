@@ -131,8 +131,56 @@ go <- function(subnetworkGenes) {
 trans_cluster <- cutree(hc, k = 3) %>% enframe()
 table(trans_cluster$value)
 summK3 <- summ(trans_cluster, tpm2)
-p <- plotClus(summK3, "Hierarchical Clustering of Transcripts, k = 3")
-p
+plotClus(summK3, "Hierarchical Clustering of Transcripts, k = 3")
+
+g3 <- unique(summK3[summK3$value == "3", "ens_gene"])
+length(g3)
+g3go <- go(g3)
+
+set.seed(123)
+tpm2 <- read.table("Files/tpmForClustering.txt", row.names = 1, header = T, sep = "\t")
+km <- kmeans(tpm2, centers = 3)
+trans_cluster_kmeans <- km$cluster %>% enframe()
+summKmeans <- summ(trans_cluster_kmeans, tpm2)
+plotClus(summKmeans, "K-means Clustering of Transcripts, k = 3")
+
+trans_cluster_som <- read.table("Files/trans_cluster_som.txt", header = T)
+summSOM <- summ(trans_cluster_som, tpm2)
+plotClus(summSOM, "Self-organizing Maps of Transcripts")
+
+trans_cluster_sc <- read.table("Files/trans_cluster_sc.txt", header = T)
+summSC <- summ(trans_cluster_sc, tpm2)
+plotClus(summSC, "Spectral Clustering of Transcripts")
+```
+
+```{r, eval=F}
+trans_cluster_som <- read.table("Files/trans_cluster_som.txt", header = T)
+summSOM <- summ(trans_cluster_som, tpm2)
+plotClus(summSOM, "Self-organizing Maps of Transcripts, k = 3")
+
+setwd("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/")
+
+library("ggplot2", suppressMessages())
+library("dplyr", suppressMessages())
+library("tidyverse", suppressMessages())
+
+t2g <- read.table("Files/t2g.txt", header = T, sep = "\t")
+t2g <- t2g[order(t2g$target_id),]
+coding <- read.table("Files/Mus_musculus_grcm38_coding_transcripts.txt", header = F)
+tpm2 <- read.table("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/tpmForClustering.txt", header = T)
+
+library("RclusTool")
+set.seed(123)
+sim <- computeGaussianSimilarity(tpm2, 1)
+res <- spectralClustering(sim, K=4)
+trans_cluster_sc <- data_frame(row.names(tpm2), res$label)
+colnames(trans_cluster_sc) <- c("name", "value")
+write.table(trans_cluster_sc, "trans_cluster_sc_k4.txt", sep = "\t", quote = F, row.names = F)
+
+res <- spectralClustering(sim, K=5)
+trans_cluster_sc <- data_frame(row.names(tpm2), res$label)
+colnames(trans_cluster_sc) <- c("name", "value")
+write.table(trans_cluster_sc, "trans_cluster_sc_k5.txt", sep = "\t", quote = F, row.names = F)
 ```
 
 ## K = 4
@@ -144,8 +192,26 @@ p <- plotClus(summK4, "Hierarchical Clustering of Transcripts, k = 4")
 p
 
 g4 <- unique(summK4[summK4$value == "4", "ens_gene"])
+length(g4)
 g4go <- go(g4)
-g4go
+#g4go$Description
+
+
+set.seed(123)
+tpm2 <- read.table("Files/tpmForClustering.txt", row.names = 1, header = T, sep = "\t")
+km <- kmeans(tpm2, centers = 4)
+trans_cluster_kmeans <- km$cluster %>% enframe()
+summKmeans <- summ(trans_cluster_kmeans, tpm2)
+plotClus(summKmeans, "K-means Clustering of Transcripts, k = 4")
+
+trans_cluster_som <- read.table("trans_cluster_som_k4.txt", header = T)
+summSOM <- summ(trans_cluster_som, tpm2)
+plotClus(summSOM, "Self-organizing Maps of Transcripts, k = 4")
+
+trans_cluster_sc <- read.table("trans_cluster_sc_k4.txt", header = T)
+summSC <- summ(trans_cluster_sc, tpm2)
+plotClus(summSC, "Spectral Clustering of Transcripts, k = 4")
+
 ```
 
 ## K = 5
@@ -155,49 +221,159 @@ table(trans_cluster$value)
 summK5 <- summ(trans_cluster, tpm2)
 p <- plotClus(summK5, "Hierarchical Clustering of Transcripts, k = 5")
 p
+
+g4 <- unique(summK5[summK5$value == "4", "ens_gene"])
+length(g4)
+g4go <- go(g4)
+#g4go$Description
+
+g5 <- unique(summK5[summK5$value == "5", "ens_gene"])
+length(g5)
+g5go <- go(g5)
+#g5go$Description
+
+set.seed(123)
+tpm2 <- read.table("Files/tpmForClustering.txt", row.names = 1, header = T, sep = "\t")
+km <- kmeans(tpm2, centers = 5)
+trans_cluster_kmeans <- km$cluster %>% enframe()
+summKmeans <- summ(trans_cluster_kmeans, tpm2)
+plotClus(summKmeans, "K-means Clustering of Transcripts, k = 5")
+
+trans_cluster_som <- read.table("trans_cluster_som_k5.txt", header = T)
+summSOM <- summ(trans_cluster_som, tpm2)
+plotClus(summSOM, "Self-organizing Maps of Transcripts, k = 5")
+
+trans_cluster_sc <- read.table("trans_cluster_sc_k5.txt", header = T)
+summSC <- summ(trans_cluster_sc, tpm2)
+plotClus(summSC, "Spectral Clustering of Transcripts, k = 5")
+
 ```
 
-## K = 6
+# GO agreement
 ```{r}
-trans_cluster <- cutree(hc, k = 6) %>% enframe()
-table(trans_cluster$value)
-summK6 <- summ(trans_cluster, tpm2)
-p <- plotClus(summK6, "Hierarchical Clustering of Transcripts, k = 6")
-p
+#K=3
+g3 <- unique(summK3[summK3$value == "3", "ens_gene"])
+length(g3)
+g3go <- go(g3)
+
+#K=4
+g4 <- unique(summK4[summK4$value == "4", "ens_gene"])
+length(g4)
+g4go <- go(g4)
+
+#K=5
+g4 <- unique(summK5[summK5$value == "4", "ens_gene"])
+length(g4)
+g4go <- go(g4)
+#g4go$Description
+
+g5 <- unique(summK5[summK5$value == "5", "ens_gene"])
+length(g5)
+g5go <- go(g5)
+
 ```
 
-## K = 7
+
+
+# Test the agreement between methods
+K = 3 hierarchical clustering
 ```{r}
-trans_cluster <- cutree(hc, k = 7) %>% enframe()
+trans_cluster <- cutree(hc, k = 3) %>% enframe()
 table(trans_cluster$value)
-summK7 <- summ(trans_cluster, tpm2)
-p <- plotClus(summK7, "Hierarchical Clustering of Transcripts, k = 7")
-p
+summK3 <- summ(trans_cluster, tpm2)
+plotClus(summK3, "Hierarchical Clustering of Transcripts, k = 3")
+
+summK3$value <- ifelse(summK3$value == "1", "e8.5",
+                        ifelse(summK3$value == "2", "e9.5",
+                               ifelse(summK3$value == "3", "e7.5", summK3$value)))
+summK3$value <- ifelse(summK3$value == "e8.5", "2",
+                        ifelse(summK3$value == "e9.5", "3",
+                               ifelse(summK3$value == "e7.5", "1", summK3$value)))
+
+hc1 <- summK3[summK3$value == 1,]
+hc1 <- dplyr::distinct(hc1[,c("value", "transcripts")])
+hc2 <- summK3[summK3$value == 2,]
+hc2 <- dplyr::distinct(hc2[,c("value", "transcripts")])
+hc3 <- summK3[summK3$value == 3,]
+hc3 <- dplyr::distinct(hc3[,c("value", "transcripts")])
+
+summK3_2 <- dplyr::distinct(summK3[,c("value", "transcripts")])
 ```
 
-## K = 8
+K = 3 K-means
 ```{r}
-trans_cluster <- cutree(hc, k = 8) %>% enframe()
-table(trans_cluster$value)
-summK8 <- summ(trans_cluster, tpm2)
-p <- plotClus(summK8, "Hierarchical Clustering of Transcripts, k = 8")
-p
+set.seed(123)
+km <- kmeans(tpm2, centers = 3)
+trans_cluster_kmeans <- km$cluster %>% enframe()
+summKmeans <- summ(trans_cluster_kmeans, tpm2)
+plotClus(summKmeans, "K-means Clustering of Transcripts")
+
+summKmeans$value <- ifelse(summKmeans$value == "1", "e9.5",
+                        ifelse(summKmeans$value == "2", "e7.5",
+                               ifelse(summKmeans$value == "3", "e8.5", summKmeans$value)))
+summKmeans$value <- ifelse(summKmeans$value == "e8.5", "2",
+                        ifelse(summKmeans$value == "e9.5", "3",
+                               ifelse(summKmeans$value == "e7.5", "1", summKmeans$value)))
+
+summKmeans_hc1 <- summKmeans[summKmeans$transcripts %in% hc1$transcripts,]
+summKmeans_hc12 <- dplyr::distinct(summKmeans_hc1[,c("value", "transcripts")])
+summKmeans_hc2 <- summKmeans[summKmeans$transcripts %in% hc2$transcripts,]
+summKmeans_hc22 <- dplyr::distinct(summKmeans_hc2[,c("value", "transcripts")])
+summKmeans_hc3 <- summKmeans[summKmeans$transcripts %in% hc3$transcripts,]
+summKmeans_hc32 <- dplyr::distinct(summKmeans_hc3[,c("value", "transcripts")])
+
+library("fossil")
+rand.index(as.numeric(hc1$value), as.numeric(summKmeans_hc12$value))
+rand.index(as.numeric(hc2$value), as.numeric(summKmeans_hc22$value))
+rand.index(as.numeric(hc3$value), as.numeric(summKmeans_hc32$value))
 ```
 
-## K = 9
+SOM
 ```{r}
-trans_cluster <- cutree(hc, k = 9) %>% enframe()
-table(trans_cluster$value)
-summK9 <- summ(trans_cluster, tpm2)
-p <- plotClus(summK9, "Hierarchical Clustering of Transcripts, k = 9")
+trans_cluster_som <- read.table("Files/trans_cluster_som.txt", header = T)
+summSOM <- summ(trans_cluster_som, tpm2)
+p <- plotClus(summSOM, "Self-organizing Maps of Transcripts")
 p
+
+summSOM$value <- ifelse(summSOM$value == "1", "e8.5",
+                        ifelse(summSOM$value == "2", "e9.5",
+                               ifelse(summSOM$value == "3", "e7.5", summSOM$value)))
+summSOM$value <- ifelse(summSOM$value == "e8.5", "2",
+                        ifelse(summSOM$value == "e9.5", "3",
+                               ifelse(summSOM$value == "e7.5", "1", summSOM$value)))
+summSOM_hc1 <- summSOM[summSOM$transcripts %in% hc1$transcripts,]
+summSOM_hc12 <- dplyr::distinct(summSOM_hc1[,c("value", "transcripts")])
+summSOM_hc2 <- summSOM[summSOM$transcripts %in% hc2$transcripts,]
+summSOM_hc22 <- dplyr::distinct(summSOM_hc2[,c("value", "transcripts")])
+summSOM_hc3 <- summSOM[summSOM$transcripts %in% hc3$transcripts,]
+summSOM_hc32 <- dplyr::distinct(summSOM_hc3[,c("value", "transcripts")])
+
+rand.index(as.numeric(hc1$value), as.numeric(summSOM_hc12$value))
+rand.index(as.numeric(hc2$value), as.numeric(summSOM_hc22$value))
+rand.index(as.numeric(hc3$value), as.numeric(summSOM_hc32$value))
 ```
 
-## K = 10
+Spectral clustering
 ```{r}
-trans_cluster <- cutree(hc, k = 10) %>% enframe()
-table(trans_cluster$value)
-summK10 <- summ(trans_cluster, tpm2)
-p <- plotClus(summK10, "Hierarchical Clustering of Transcripts, k = 10")
+trans_cluster_sc <- read.table("Files/trans_cluster_sc.txt", header = T)
+summSC <- summ(trans_cluster_sc, tpm2)
+p <- plotClus(summSC, "Spectral Clustering of Transcripts")
 p
+
+summSC$value <- ifelse(summSC$value == "1", "e7.5",
+                        ifelse(summSC$value == "2", "e8.5",
+                               ifelse(summSC$value == "3", "e9.5", summSC$value)))
+summSC$value <- ifelse(summSC$value == "e8.5", "2",
+                        ifelse(summSC$value == "e9.5", "3",
+                               ifelse(summSC$value == "e7.5", "1", summSC$value)))
+summSC_hc1 <- summSC[summSC$transcripts %in% hc1$transcripts,]
+summSC_hc12 <- dplyr::distinct(summSC_hc1[,c("value", "transcripts")])
+summSC_hc2 <- summSC[summSC$transcripts %in% hc2$transcripts,]
+summSC_hc22 <- dplyr::distinct(summSC_hc2[,c("value", "transcripts")])
+summSC_hc3 <- summSC[summSC$transcripts %in% hc3$transcripts,]
+summSC_hc32 <- dplyr::distinct(summSC_hc3[,c("value", "transcripts")])
+
+rand.index(as.numeric(hc1$value), as.numeric(summSC_hc12$value))
+rand.index(as.numeric(hc2$value), as.numeric(summSC_hc22$value))
+rand.index(as.numeric(hc3$value), as.numeric(summSC_hc32$value))
 ```
