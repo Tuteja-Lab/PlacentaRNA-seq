@@ -50,3 +50,17 @@ a <- reshape2::melt(avg3)
 ggplot(aes(x=log2(value), colour=Var2), data=a) + geom_density()
 
 ggplot(aes(x=log2(value), colour=Var2), data=a[a$Var2 %in% c("X.1", "X.2", "X.3"),]) + geom_density() + ggtitle("PLACENTA_Wk4_Tr1")
+
+tpm2 <- read.table("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/tpmForClustering.txt", header = T)
+t2g <- read.table("Files/t2g.txt", header = T)
+
+load(file = "Files/combine-test-expression1.Rdata")
+mouseHumanOrthologs<-dataset$GRCH38$mouseHumanOrthologs
+hvGenes <- t2g[t2g$target_id %in% rownames(tpm2),]
+hvGenes2 <- mouseHumanOrthologs[mouseHumanOrthologs$Gene.stable.ID %in% hvGenes$ens_gene,]
+
+length(intersect(hvGenes2$Human.gene.name, avg2$ILMN_Gene))
+intersect(hvGenes2$Human.gene.name, avg2$ILMN_Gene)
+
+length(unique(hvGenes$ext_gene))
+length(unique(hvGenes2$Gene.name))

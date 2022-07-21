@@ -37,7 +37,7 @@ go <- function(subnetworkGenes) {
   res$GeneRatio <- sapply(strsplit(res$GeneRatio, "/"), function(x) as.numeric(x[1])/as.numeric(x[2]))
   res$BgRatio <- sapply(strsplit(res$BgRatio, "/"), function(x) as.numeric(x[1])/as.numeric(x[2]))
   res$Fold <- as.numeric(res$GeneRatio)/as.numeric(res$BgRatio)
-  res <- res[res$qvalue <= 0.05 & res$Fold >= 2 & res$Count >= 5,]
+  #res <- res[res$qvalue <= 0.05 & res$Fold >= 2 & res$Count >= 5,]
   
   return(res)
 }

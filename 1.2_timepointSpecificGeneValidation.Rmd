@@ -23,7 +23,7 @@ knitr::opts_knit$set(width = 75)
 Documentation for the analysis of mouse placental RNA-seq data at e7.5, e8.5 and e9.5.
 
 ## 1. Clustering analysis to confirm hierarchical clustering trends
-This analysis is carried out in two steps. First, run the clustering algorithms. Second, get a summary table with expression levels of transcripts to validate the trends of the groups with visualization. For the second step, we can set up the following functions:
+This analysis is carried out in two steps. First, run the clustering algorithms with different number of groups (k = 3, 4 and 5). Second, get a summary table with expression levels of transcripts to validate the trends of the groups with visualization. For the second step, we can set up the following functions:
 ```{r}
 summ <- function(trans_cluster, tpm2=tpm2) {
   tpm3 <- tpm2
@@ -109,17 +109,52 @@ library("tidyverse", suppressMessages())
 t2g <- read.table("Files/t2g.txt", header = T, sep = "\t")
 t2g <- t2g[order(t2g$target_id),]
 coding <- read.table("Files/Mus_musculus_grcm38_coding_transcripts.txt", header = F)
+tpm2 <- read.table("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/tpmForClustering.txt", header = T)
+```
+
+### k = 3:
+Hierarchical clustering, k = 3:
+```{r}
+hc <- hclust(dist(tpm2, method = "euclidean"), "complete")
+trans_cluster <- cutree(hc, k = 3) %>% enframe()
+table(trans_cluster$value)
+summK3 <- summ(trans_cluster, tpm2)
+summK3$value <- ifelse(summK3$value == "1", "e8.5",
+                        ifelse(summK3$value == "2", "e9.5",
+                               ifelse(summK3$value == "3", "e7.5", summK3$value)))
+summK3$value <- ifelse(summK3$value == "e8.5", "2",
+                        ifelse(summK3$value == "e9.5", "3",
+                               ifelse(summK3$value == "e7.5", "1", summK3$value)))
+plotClus(summK3, "Hierarchical Clustering of Transcripts, k = 3")
+
+summK32 <- dplyr::distinct(summK3[,c("value", "transcripts")])
+summK32 <- summK32[order(summK32$transcripts),]
 ```
 
 For K-means clustering: <br>
 ```{r}
 set.seed(123)
-tpm2 <- read.table("Files/tpmForClustering.txt", row.names = 1, header = T, sep = "\t")
 km <- kmeans(tpm2, centers = 3)
 trans_cluster_kmeans <- km$cluster %>% enframe()
 summKmeans <- summ(trans_cluster_kmeans, tpm2)
-p <- plotClus(summKmeans, "K-means Clustering of Transcripts")
-p
+summKmeans$value <- ifelse(summKmeans$value == "1", "e9.5",
+                        ifelse(summKmeans$value == "2", "e7.5",
+                               ifelse(summKmeans$value == "3", "e8.5", summKmeans$value)))
+summKmeans$value <- ifelse(summKmeans$value == "e8.5", "2",
+                        ifelse(summKmeans$value == "e9.5", "3",
+                               ifelse(summKmeans$value == "e7.5", "1", summKmeans$value)))
+plotClus(summKmeans, "K-means Clustering of Transcripts, k = 3")
+
+summKmeans2 <- dplyr::distinct(summKmeans[,c("value", "transcripts")])
+summKmeans2 <- summKmeans2[order(summKmeans2$transcripts),]
+
+t <- summKmeans2
+for (i in 1:3) {
+  for (j in 1:3) {
+    q <- length(intersect(summK32[summK32$value == i, "transcripts"], t[t$value == j, "transcripts"])) #number of observed successes
+    print(paste("Percent agreement between hierCluster", i, "and Kmeans cluster", j, "is:", q/length(unique(summK32[summK32$value == i, "transcripts"], t[t$value == j, "transcripts"]))*100))
+  }
+}
 ```
 
 For self-organizing maps: <br>
@@ -134,8 +169,24 @@ Since this run could take time, I saved the results to reproduce the plot here. 
 ```{r}
 trans_cluster_som <- read.table("Files/trans_cluster_som.txt", header = T)
 summSOM <- summ(trans_cluster_som, tpm2)
-p <- plotClus(summSOM, "Self-organizing Maps of Transcripts")
-p
+summSOM$value <- ifelse(summSOM$value == "1", "e8.5",
+                        ifelse(summSOM$value == "2", "e9.5",
+                               ifelse(summSOM$value == "3", "e7.5", summSOM$value)))
+summSOM$value <- ifelse(summSOM$value == "e8.5", "2",
+                        ifelse(summSOM$value == "e9.5", "3",
+                               ifelse(summSOM$value == "e7.5", "1", summSOM$value)))
+plotClus(summSOM, "Self-organizing Maps of Transcripts, k = 3")
+
+summSOM2 <- dplyr::distinct(summSOM[,c("value", "transcripts")])
+summSOM2 <- summSOM2[order(summSOM2$transcripts),]
+
+t <- summSOM2
+for (i in 1:3) {
+  for (j in 1:3) {
+    q <- length(intersect(summK32[summK32$value == i, "transcripts"], t[t$value == j, "transcripts"])) #number of observed successes
+    print(paste("Percent of hierCluster", i, "in SOM cluster", j, "is:", q/length(unique(c(summK32[summK32$value == i, "transcripts"], t[t$value == j, "transcripts"])))*100))
+  }
+}
 ```
 
 For spectral clustering: <br>
@@ -152,11 +203,215 @@ Plot of transcripts: <br>
 ```{r}
 trans_cluster_sc <- read.table("Files/trans_cluster_sc.txt", header = T)
 summSC <- summ(trans_cluster_sc, tpm2)
-p <- plotClus(summSC, "Spectral Clustering of Transcripts")
-p
+summSC$value <- ifelse(summSC$value == "1", "e7.5",
+                        ifelse(summSC$value == "2", "e8.5",
+                               ifelse(summSC$value == "3", "e9.5", summSC$value)))
+summSC$value <- ifelse(summSC$value == "e8.5", "2",
+                        ifelse(summSC$value == "e9.5", "3",
+                               ifelse(summSC$value == "e7.5", "1", summSC$value)))
+plotClus(summSC, "Spectral Clustering of Transcripts")
+
+summSC2 <- dplyr::distinct(summSC[,c("value", "transcripts")])
+summSC2 <- summSC2[order(summSC2$transcripts),]
+
+t <- summSC2
+for (i in 1:3) {
+  for (j in 1:3) {
+    q <- length(intersect(summK32[summK32$value == i, "transcripts"], t[t$value == j, "transcripts"])) #number of observed successes
+    print(paste("Percent agreement between hierCluster", i, "and SC cluster", j, "is:", q/length(unique(c(summK32[summK32$value == i, "transcripts"], t[t$value == j, "transcripts"])))*100))
+  }
+}
+```
+We can see the cluster trends agree with these of hierarchical clustering. <br>
+
+### k = 4:
+Hierarchical clustering, k = 4:
+```{r}
+trans_cluster <- cutree(hc, k = 4) %>% enframe()
+table(trans_cluster$value)
+summK3 <- summ(trans_cluster, tpm2)
+summK3$value <- ifelse(summK3$value == "1", "e8.5",
+                        ifelse(summK3$value == "2", "e9.5",
+                               ifelse(summK3$value == "3", "e7.5", summK3$value)))
+summK3$value <- ifelse(summK3$value == "e8.5", "2",
+                        ifelse(summK3$value == "e9.5", "3",
+                               ifelse(summK3$value == "e7.5", "1", summK3$value)))
+plotClus(summK3, "Hierarchical Clustering of Transcripts, k = 4")
+summK32 <- dplyr::distinct(summK3[,c("value", "transcripts")])
+summK32 <- summK32[order(summK32$transcripts),]
 ```
 
+For K-means clustering: <br>
+```{r}
+set.seed(123)
+km <- kmeans(tpm2, centers = 4)
+trans_cluster_kmeans <- km$cluster %>% enframe()
+summKmeans <- summ(trans_cluster_kmeans, tpm2)
+
+plotClus(summKmeans, "K-means Clustering of Transcripts, k = 4")
+
+summKmeans2 <- dplyr::distinct(summKmeans[,c("value", "transcripts")])
+summKmeans2 <- summKmeans2[order(summKmeans2$transcripts),]
+
+t <- summKmeans2
+for (i in 1:4) {
+  for (j in 1:4) {
+    q <- length(intersect(summK32[summK32$value == i, "transcripts"], t[t$value == j, "transcripts"])) #number of observed successes
+    print(paste("Percent of hierCluster", i, "in Kmeans cluster", j, "is:", q/length(unique(c(summK32[summK32$value == i, "transcripts"], t[t$value == j, "transcripts"])))*100))
+  }
+}
+```
+
+For self-organizing maps: <br>
+```{r, eval=F}
+library("kohonen")
+set.seed(123)
+som <- som(as.matrix(tpm2), grid = somgrid(4, 1, "rectangular"))
+trans_cluster_som <- som$unit.classif %>% enframe()
+trans_cluster_som$name <- row.names(tpm2)
+```
+Since this run could take time, I saved the results to reproduce the plot here. <br>
+```{r}
+trans_cluster_som <- read.table("trans_cluster_som_k4.txt", header = T)
+summSOM <- summ(trans_cluster_som, tpm2)
+
+plotClus(summSOM, "Self-organizing Maps of Transcripts, k = 4")
+
+summSOM2 <- dplyr::distinct(summSOM[,c("value", "transcripts")])
+summSOM2 <- summSOM2[order(summSOM2$transcripts),]
+
+t <- summSOM2
+for (i in 1:4) {
+  for (j in 1:4) {
+    q <- length(intersect(summK32[summK32$value == i, "transcripts"], t[t$value == j, "transcripts"])) #number of observed successes
+    print(paste("Percent of hierCluster", i, "in SOM cluster", j, "is:", q/length(unique(c(summK32[summK32$value == i, "transcripts"], t[t$value == j, "transcripts"])))*100))
+  }
+}
+```
+
+For spectral clustering: <br>
+```{r, eval=F}
+library("RclusTool")
+set.seed(123)
+sim <- computeGaussianSimilarity(tpm2, 1)
+res <- spectralClustering(sim, K=4)
+trans_cluster_sc <- data_frame(row.names(tpm2), res$label)
+colnames(trans_cluster_sc) <- c("name", "value")
+```
+Plot of transcripts: <br>
+```{r}
+trans_cluster_sc <- read.table("trans_cluster_sc_k4.txt", header = T)
+summSC <- summ(trans_cluster_sc, tpm2)
+
+plotClus(summSC, "Spectral Clustering of Transcripts")
+
+summSC2 <- dplyr::distinct(summSC[,c("value", "transcripts")])
+summSC2 <- summSC2[order(summSC2$transcripts),]
+
+t <- summSC2
+for (i in 1:4) {
+  for (j in 1:4) {
+    q <- length(intersect(summK32[summK32$value == i, "transcripts"], t[t$value == j, "transcripts"])) #number of observed successes
+    print(paste("Percent of hierCluster", i, "in SC cluster", j, "is:", q/length(unique(c(summK32[summK32$value == i, "transcripts"], t[t$value == j, "transcripts"])))*100))
+  }
+}
+```
+
+### k = 5:
+Hierarchical clustering, k = 5:
+```{r}
+trans_cluster <- cutree(hc, k = 5) %>% enframe()
+table(trans_cluster$value)
+summK3 <- summ(trans_cluster, tpm2)
+summK3$value <- ifelse(summK3$value == "1", "e8.5",
+                        ifelse(summK3$value == "2", "e9.5",
+                               ifelse(summK3$value == "3", "e7.5", summK3$value)))
+summK3$value <- ifelse(summK3$value == "e8.5", "2",
+                        ifelse(summK3$value == "e9.5", "3",
+                               ifelse(summK3$value == "e7.5", "1", summK3$value)))
+plotClus(summK3, "Hierarchical Clustering of Transcripts, k = 5")
+summK32 <- dplyr::distinct(summK3[,c("value", "transcripts")])
+summK32 <- summK32[order(summK32$transcripts),]
+```
+
+For K-means clustering: <br>
+```{r}
+set.seed(123)
+km <- kmeans(tpm2, centers = 5)
+trans_cluster_kmeans <- km$cluster %>% enframe()
+summKmeans <- summ(trans_cluster_kmeans, tpm2)
+
+plotClus(summKmeans, "K-means Clustering of Transcripts, k = 5")
+
+summKmeans2 <- dplyr::distinct(summKmeans[,c("value", "transcripts")])
+summKmeans2 <- summKmeans2[order(summKmeans2$transcripts),]
+
+t <- summKmeans2
+for (i in 1:5) {
+  for (j in 1:5) {
+    q <- length(intersect(summK32[summK32$value == i, "transcripts"], t[t$value == j, "transcripts"])) #number of observed successes
+    print(paste("Percent of hierCluster", i, "in Kmeans cluster", j, "is:", q/length(unique(c(summK32[summK32$value == i, "transcripts"], t[t$value == j, "transcripts"])))*100))
+  }
+}
+```
+
+For self-organizing maps: <br>
+```{r, eval=F}
+library("kohonen")
+set.seed(123)
+som <- som(as.matrix(tpm2), grid = somgrid(5, 1, "rectangular"))
+trans_cluster_som <- som$unit.classif %>% enframe()
+trans_cluster_som$name <- row.names(tpm2)
+```
+Since this run could take time, I saved the results to reproduce the plot here. <br>
+```{r}
+trans_cluster_som <- read.table("trans_cluster_som_k5.txt", header = T)
+summSOM <- summ(trans_cluster_som, tpm2)
+
+plotClus(summSOM, "Self-organizing Maps of Transcripts, k = 5")
+
+summSOM2 <- dplyr::distinct(summSOM[,c("value", "transcripts")])
+summSOM2 <- summSOM2[order(summSOM2$transcripts),]
+
+t <- summSOM2
+for (i in 1:5) {
+  for (j in 1:5) {
+    q <- length(intersect(summK32[summK32$value == i, "transcripts"], t[t$value == j, "transcripts"])) #number of observed successes
+    print(paste("Percent of hierCluster", i, "in SOM cluster", j, "is:", q/length(unique(c(summK32[summK32$value == i, "transcripts"], t[t$value == j, "transcripts"])))*100))
+  }
+}
+```
+
+For spectral clustering: <br>
+```{r, eval=F}
+library("RclusTool")
+set.seed(123)
+sim <- computeGaussianSimilarity(tpm2, 1)
+res <- spectralClustering(sim, K=5)
+trans_cluster_sc <- data_frame(row.names(tpm2), res$label)
+colnames(trans_cluster_sc) <- c("name", "value")
+```
+Plot of transcripts: <br>
+```{r}
+trans_cluster_sc <- read.table("trans_cluster_sc_k5.txt", header = T)
+summSC <- summ(trans_cluster_sc, tpm2)
+
+plotClus(summSC, "Spectral Clustering of Transcripts, k = 5")
+
+summSC2 <- dplyr::distinct(summSC[,c("value", "transcripts")])
+summSC2 <- summSC2[order(summSC2$transcripts),]
+
+t <- summSC2
+for (i in 1:5) {
+  for (j in 1:5) {
+    q <- length(intersect(summK32[summK32$value == i, "transcripts"], t[t$value == j, "transcripts"])) #number of observed successes
+    print(paste("Percent of hierCluster", i, "in SC cluster", j, "is:", q/length(unique(c(summK32[summK32$value == i, "transcripts"], t[t$value == j, "transcripts"])))*100))
+  }
+}
+```
 We can see the cluster trends agree with these of hierarchical clustering. <br>
+
+
 
 ## 2. Marker counts in hierarchical groups
 Markers were collected from 5 review papers (see References). <br>
