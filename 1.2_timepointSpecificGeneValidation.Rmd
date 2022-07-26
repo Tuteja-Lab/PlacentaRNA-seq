@@ -409,8 +409,6 @@ for (i in 1:5) {
   }
 }
 ```
-We can see the cluster trends agree with these of hierarchical clustering. <br>
-
 
 
 ## 2. Marker counts in hierarchical groups
