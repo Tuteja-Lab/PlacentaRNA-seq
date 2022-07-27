@@ -142,6 +142,72 @@ for (time in c("e7.5", "e8.5", "e9.5")) {
 }
 ```
 
+Randomization test:
+```{r, eval=F}
+#!/usr/bin/env Rscript
+args = commandArgs(trailingOnly=TRUE)
+
+library("doParallel")
+
+load(file = "Files/combine-test-expression1.Rdata")
+
+mouseHumanOrthologs<-dataset$GRCH38$mouseHumanOrthologs
+humanGeneMapping<-dataset$GRCH38$humanGeneMapping
+
+#For VentoTormo Data
+d <- dataset$PlacentaDeciduaBloodData
+data <- d$expressionData
+cellDetails <- d$cellDetails
+organism <- "Mouse"
+
+runPCE <- function(inputGenes, nameType = c("Gene.name", "Gene.stable.ID")) {
+  if (nameType == "Gene.name") {
+    humanOrthologs <- mouseHumanOrthologs[mouseHumanOrthologs$Gene.name %in% toupper(inputGenes),]
+  } else {
+    humanOrthologs <- mouseHumanOrthologs[mouseHumanOrthologs$Gene.stable.ID %in% inputGenes,]
+  }
+  inputGenes <- humanOrthologs$Human.gene.stable.ID
+  expressionData <- data[intersect(row.names(data), mouseHumanOrthologs$Human.gene.stable.ID),]
+  se <- SummarizedExperiment(assays = SimpleList(as.matrix(expressionData)), rowData = row.names(expressionData), colData = colnames(expressionData))
+  cellSpecificGenesExp <- teGeneRetrieval(se, expressedGeneThreshold = 1)
+  print(paste("Number of input genes found is", length(inputGenes)))
+  gs <- GeneSet(geneIds=toupper(inputGenes))
+  output2 <- teEnrichmentCustom(gs, cellSpecificGenesExp)
+  enrichmentOutput <- setNames(data.frame(assay(output2[[1]]), row.names = rowData(output2[[1]])[,1]), colData(output2[[1]])[,1])
+  row.names(cellDetails) <- cellDetails$RName
+  enrichmentOutput$Tissue <- cellDetails[row.names(enrichmentOutput), "CellName"]
+  
+  return(enrichmentOutput)
+}
+
+
+randFunc <- function(pop, size, cell, i) {
+  library("TissueEnrich", suppressMessages())
+
+  gene_set <- sample(pop, size)
+  res <- runPCE(inputGenes=gene_set, nameType="Gene.stable.ID")
+  if (cell %in% res$Tissue) {
+    p <- res[res$Tissue == cell, "Log10PValue"]
+  } else {
+    p <- 1
+  }
+
+  print(i)
+  return(p)
+}
+
+pop <- read.table(args[1], header = F)
+sub <- read.table(args[2], sep = ",", header = T)
+no_cores <- 20
+cl <- makeCluster(no_cores)
+registerDoParallel(cl)
+result <- foreach(i=1:10000) %dopar% randFunc(pop$V1, length(sub$name), args[4], i)
+stopCluster(cl)
+
+result2 <- unlist(result)
+write.table(result2, args[3], row.names = F, sep = "\t", quote = F)
+```
+
 ## 2. Placenta Ontology
 For some networks (`e7.5_1_STRING`, `e9.5_1_STRING`, `e9.5_3_GENIE3`), we do not observe any enrichment for fetal placental cells, possibly because not all genes in the networks are annotated in the background dataset which we used in PCE. Therefore, we also used Placenta Ontology, which carries out enrichment tests based on different background sources than those used in PCE. We obtained placenta ontology GMT file from Naismith et al., 2021 and uploaded the file to the WEB-based GEne SeT AnaLysis Toolkit (www.webgestalt.org) as a functional database. Input gene lists are the human orthologs of our subnetworks. <br>
 We first obtain human orthologs of genes:

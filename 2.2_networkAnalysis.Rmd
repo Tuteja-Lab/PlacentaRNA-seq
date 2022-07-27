@@ -212,6 +212,307 @@ for (time in c("e7.5", "e8.5", "e9.5")) {
   }
 }
 ```
+
+## 3. Hub gene analyses:
+Hub genes that are known or implicated. Known = annotated as related to placenta/trophoblast/trophectoderm/chorion in GO biological process and MGI phenotype terms. Implicated = annotated as related to embryo in GO biological process and MGI phenotype terms.
+```{r}
+mart <- biomaRt::useMart("ensembl", host="http://sep2019.archive.ensembl.org", dataset = "mmusculus_gene_ensembl")
+mm10 <- biomaRt::getBM(attributes = c("ensembl_gene_id", "external_gene_name", "mgi_id", "gene_biotype"), mart = mart)
+placenta <- read.table("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/hubGeneCuration/MGI_GO_placentaChorioTBtrophec_genes.txt", header = F)
+placenta <- dplyr::inner_join(placenta, mm10, by = c("V1" = "mgi_id"))
+embryo <- read.table("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/hubGeneCuration/MGI_GO_embryo_genes.txt", header = F)
+embryo <- dplyr::inner_join(embryo, mm10, by = c("V1" = "mgi_id"))
+annot <- unique(c(placenta$external_gene_name, embryo$external_gene_name))
+```
+E7.5_1_STRING:
+```{r}
+load("Files/STRING/e7.5/largestComponent/e7.5_1/e7.5_1_hubGenes.rda")
+
+length(intersect(all, placenta$external_gene_name))
+length(setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name))
+
+
+intersect(all, placenta$external_gene_name)
+setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name)
+```
+E7.5_2_GENIE3:
+```{r}
+load("Files/GENIE3/e7.5/e7.5_2/e7.5_2_hubGenes.rda")
+
+length(intersect(all, placenta$external_gene_name))
+length(setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name))
+
+intersect(all, placenta$external_gene_name)
+setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name)
+```
+E8.5_1_STRING:
+```{r}
+load("Files/STRING/e8.5/largestComponent/e8.5_1/e8.5_1_hubGenes.rda")
+
+length(intersect(all, placenta$external_gene_name))
+length(setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name))
+
+intersect(all, placenta$external_gene_name)
+setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name)
+```
+E8.5_2_GENIE3:
+```{r}
+load("Files/GENIE3/e8.5/e8.5_2/e8.5_2_hubGenes.rda")
+
+length(intersect(all, placenta$external_gene_name))
+length(setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name))
+
+intersect(all, placenta$external_gene_name)
+setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name)
+```
+E9.5 networks:
+```{r}
+load("Files/STRING/e9.5/largestComponent/e9.5_1/e9.5_1_hubGenes.rda")
+temp <- all
+load("Files/STRING/e9.5/largestComponent/e9.5_2/e9.5_2_hubGenes.rda")
+temp <- c(all, temp)
+load("Files/STRING/e9.5/largestComponent/e9.5_3/e9.5_3_hubGenes.rda")
+temp <- c(all, temp)
+load("Files/STRING/e9.5/largestComponent/e9.5_4/e9.5_4_hubGenes.rda")
+temp <- c(all, temp)
+load("Files/GENIE3/e9.5/e9.5_1/e9.5_1_hubGenes.rda")
+temp <- c(all, temp)
+load("Files/GENIE3/e9.5/e9.5_2/e9.5_2_hubGenes.rda")
+temp <- c(all, temp)
+load("Files/GENIE3/e9.5/e9.5_3/e9.5_3_hubGenes.rda")
+temp <- c(all, temp)
+all <- temp
+
+length(intersect(all, placenta$external_gene_name))
+length(setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name))
+
+intersect(all, placenta$external_gene_name)
+setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name)
+```
+
+Test if the number of known/implicated genes in the networks is significant: <br>
+E7.5 genes in networks
+```{r}
+genes <- read.table("Files/GENIE3/e7.5/e7.5_2/e7.5_2_nodeTable.csv", sep = ",", header = T)
+genes2 <- read.table("Files/STRING/e7.5/largestComponent/e7.5_1/e7.5_1_nodeTable.csv", sep = ",", header = T)
+t2g <- read.table("Files/t2g.txt", header = T)
+allGenes <- unique(c(t2g[t2g$ens_gene %in% genes$name, "ext_gene"], genes2$name))
+
+load("Files/STRING/e7.5/largestComponent/e7.5_1/e7.5_1_hubGenes.rda")
+temp <- all
+load("Files/GENIE3/e7.5/e7.5_2/e7.5_2_hubGenes.rda")
+all <- c(all, temp)
+
+set.seed(1234)
+t <- 0
+t2 <- c()
+for (i in 1:10000) {
+  s <- sample(allGenes, 17)
+  #print(length(intersect(s, placenta$external_gene_name)))
+  t2 <- c(t2, length(intersect(s, annot)))
+  if (length(intersect(s, annot)) > length(intersect(all, annot))) {
+    t <- t+1
+  }
+}
+t/10000
+t2<-as.data.frame(t2)
+ggplot(t2, aes(x = t2)) + geom_histogram(binwidth = 1) +
+    geom_vline(aes(xintercept = length(intersect(all, annot))), color="blue", linetype="dashed", size=1) +
+  ggtitle("e7.5 hub genes")
+
+```
+
+E8.5 genes in networks
+```{r}
+genes <- read.table("Files/GENIE3/e8.5/e8.5_2/e8.5_2_nodeTable.csv", sep = ",", header = T)
+genes2 <- read.table("Files/STRING/e8.5/largestComponent/e8.5_1/e8.5_1_nodeTable.csv", sep = ",", header = T)
+allGenes <- unique(c(t2g[t2g$ens_gene %in% genes$name, "ext_gene"], genes2$name))
+
+load("Files/STRING/e8.5/largestComponent/e8.5_1/e8.5_1_hubGenes.rda")
+temp <- all
+load("Files/GENIE3/e8.5/e8.5_2/e8.5_2_hubGenes.rda")
+all <- c(all, temp)
+
+set.seed(1234)
+t <- 0
+t2 <- c()
+for (i in 1:10000) {
+  s <- sample(allGenes, 28)
+  #print(length(intersect(s, placenta$external_gene_name)))
+  t2 <- c(t2, length(intersect(s, annot)))
+  if (length(intersect(s, annot)) >= length(intersect(all, annot))) {
+    t <- t+1
+  }
+}
+t/10000
+t2<-as.data.frame(t2)
+ggplot(t2, aes(x = t2)) + geom_histogram(binwidth = 1) +
+    geom_vline(aes(xintercept = length(intersect(all, annot))), color="blue", linetype="dashed", size=1) +
+  ggtitle("e8.5 hub genes")
+```
+
+E9.5 genes in networks
+```{r}
+genes <- c()
+for (i in 1:3) {
+  f <- read.table(paste0("Files/GENIE3/e9.5/e9.5_", i, "/e9.5_", i, "_nodeTable.csv"), sep = ",", header = T)
+  genes <- c(genes, f$name)
+}
+
+genes2 <- c()
+for (i in 1:4) {
+  f <- read.table(paste0("Files/STRING/e9.5/largestComponent/e9.5_", i, "/e9.5_", i, "_nodeTable.csv"), sep = ",", header = T)
+  genes2 <- c(genes2, f$name)
+}
+
+allGenes <- unique(c(t2g[t2g$ens_gene %in% genes, "ext_gene"], genes2))
+
+load("Files/STRING/e9.5/largestComponent/e9.5_1/e9.5_1_hubGenes.rda")
+temp <- all
+load("Files/STRING/e9.5/largestComponent/e9.5_2/e9.5_2_hubGenes.rda")
+temp <- c(all, temp)
+load("Files/STRING/e9.5/largestComponent/e9.5_3/e9.5_3_hubGenes.rda")
+temp <- c(all, temp)
+load("Files/STRING/e9.5/largestComponent/e9.5_4/e9.5_4_hubGenes.rda")
+temp <- c(all, temp)
+load("Files/GENIE3/e9.5/e9.5_1/e9.5_1_hubGenes.rda")
+temp <- c(all, temp)
+load("Files/GENIE3/e9.5/e9.5_2/e9.5_2_hubGenes.rda")
+temp <- c(all, temp)
+load("Files/GENIE3/e9.5/e9.5_3/e9.5_3_hubGenes.rda")
+temp <- c(all, temp)
+all <- temp
+
+set.seed(1234)
+t <- 0
+t2 <- c()
+for (i in 1:10000) {
+  s <- sample(allGenes, 127)
+  #print(length(intersect(s, placenta$external_gene_name)))
+  t2 <- c(t2, length(intersect(s, annot)))
+  if (length(intersect(s, annot)) >= length(intersect(all, annot))) {
+    t <- t+1
+  }
+}
+t/10000
+t2<-as.data.frame(t2)
+ggplot(t2, aes(x = t2)) + geom_histogram(binwidth = 1) +
+    geom_vline(aes(xintercept = length(intersect(all, annot))), color="blue", linetype="dashed", size=1) +
+  ggtitle("e9.5 hub genes")
+```
+
+Hub genes in one method are also nodes in another method: <br>
+E7.5
+```{r}
+e7.5_1_STRING <- read.table("Files/STRING/e7.5/largestComponent/e7.5_1/e7.5_1_nodeTable.csv", header = T, sep = ",")
+e7.5_2_GENIE3 <- read.table("Files/GENIE3/e7.5/e7.5_2/e7.5_2_nodeTable.csv", header = T, sep = ",")
+e7.5_2_GENIE3 <- inner_join(e7.5_2_GENIE3, mm10[,1:2], by = c("name" = "ensembl_gene_id"))
+c <- intersect(e7.5_1_STRING$shared.name, e7.5_2_GENIE3$external_gene_name)
+load("Files/STRING/e7.5/largestComponent/e7.5_1/e7.5_1_hubGenes.rda")
+intersect(all, c)
+load("Files/GENIE3/e7.5/e7.5_2/e7.5_2_hubGenes.rda")
+intersect(all, c)
+```
+E8.5
+```{r}
+e8.5_1_STRING <- read.table("Files/STRING/e8.5/largestComponent/e8.5_1/e8.5_1_nodeTable.csv", header = T, sep = ",")
+e8.5_2_GENIE3 <- read.table("Files/GENIE3/e8.5/e8.5_2/e8.5_2_nodeTable.csv", header = T, sep = ",")
+e8.5_2_GENIE3 <- inner_join(e8.5_2_GENIE3, mm10[,1:2], by = c("name" = "ensembl_gene_id"))
+c <- intersect(e8.5_1_STRING$shared.name, e8.5_2_GENIE3$external_gene_name)
+
+load("Files/STRING/e8.5/largestComponent/e8.5_1/e8.5_1_hubGenes.rda")
+intersect(all, c)
+
+load("Files/GENIE3/e8.5/e8.5_2/e8.5_2_hubGenes.rda")
+intersect(all, c)
+```
+
+E9.5
+```{r}
+e9.5_1_STRING <- read.table("Files/STRING/e9.5/largestComponent/e9.5_1/e9.5_1_nodeTable.csv", header = T, sep = ",")
+e9.5_2_STRING <- read.table("Files/STRING/e9.5/largestComponent/e9.5_2/e9.5_2_nodeTable.csv", header = T, sep = ",")
+e9.5_3_STRING <- read.table("Files/STRING/e9.5/largestComponent/e9.5_3/e9.5_3_nodeTable.csv", header = T, sep = ",")
+e9.5_4_STRING <- read.table("Files/STRING/e9.5/largestComponent/e9.5_4/e9.5_4_nodeTable.csv", header = T, sep = ",")
+
+e9.5_1_GENIE3 <- read.table("Files/GENIE3/e9.5/e9.5_1/e9.5_1_nodeTable.csv", header = T, sep = ",")
+e9.5_1_GENIE3 <- inner_join(e9.5_1_GENIE3, mm10[,1:2], by = c("name" = "ensembl_gene_id"))
+e9.5_2_GENIE3 <- read.table("Files/GENIE3/e9.5/e9.5_2/e9.5_2_nodeTable.csv", header = T, sep = ",")
+e9.5_2_GENIE3 <- inner_join(e9.5_2_GENIE3, mm10[,1:2], by = c("name" = "ensembl_gene_id"))
+e9.5_3_GENIE3 <- read.table("Files/GENIE3/e9.5/e9.5_3/e9.5_3_nodeTable.csv", header = T, sep = ",")
+e9.5_3_GENIE3 <- inner_join(e9.5_3_GENIE3, mm10[,1:2], by = c("name" = "ensembl_gene_id"))
+
+c <- intersect(c(e9.5_1_STRING$shared.name, e9.5_2_STRING$shared.name, e9.5_3_STRING$shared.name, e9.5_4_STRING$shared.name), c(e9.5_1_GENIE3$external_gene_name, e9.5_2_GENIE3$external_gene_name, e9.5_3_GENIE3$external_gene_name))
+length(c)
+
+load("Files/STRING/e9.5/largestComponent/e9.5_1/e9.5_1_hubGenes.rda")
+intersect(all, c)
+load("Files/STRING/e9.5/largestComponent/e9.5_2/e9.5_2_hubGenes.rda")
+intersect(all, c)
+load("Files/STRING/e9.5/largestComponent/e9.5_3/e9.5_3_hubGenes.rda")
+intersect(all, c)
+load("Files/STRING/e9.5/largestComponent/e9.5_4/e9.5_4_hubGenes.rda")
+intersect(all, c)
+load("Files/GENIE3/e9.5/e9.5_1/e9.5_1_hubGenes.rda")
+intersect(all, c)
+load("Files/GENIE3/e9.5/e9.5_2/e9.5_2_hubGenes.rda")
+intersect(all, c)
+load("Files/GENIE3/e9.5/e9.5_3/e9.5_3_hubGenes.rda")
+intersect(all, c)
+```
+
+## 4. Randomization tests:
+To test if the networks are significantly enriched for the GO terms of interest, compared to random gene sets of the same size. The following script is to run the randomization test. It will take a long time to run 10000 times, hence not run here.
+```{r, eval=F}
+#!/usr/bin/env Rscript
+args = commandArgs(trailingOnly=TRUE)
+
+library("doParallel")
+
+go <- function(subnetworkGenes) {
+  GO <- enrichGO(gene = subnetworkGenes, OrgDb=org.Mm.eg.db, ont = "BP", qvalueCutoff = 1, pvalueCutoff = 1, maxGSSize=1000, readable = T, keyType = "ENSEMBL")
+  goSimplify <- as.data.frame(GO)
+
+  return(goSimplify)
+}
+
+randFunc <- function(pop, size, go_term, i) {
+  library("clusterProfiler", suppressMessages())
+  library("org.Mm.eg.db", suppressMessages())
+
+  gene_set <- sample(pop, size)
+  res <- go(gene_set)
+  if (go_term %in% res$Description) {
+    p <- res[res$Description == go_term, "qvalue"]
+  } else {
+    p <- 1
+  }
+
+  print(i)
+  return(p)
+}
+
+pop <- read.table(args[1], header = F)
+sub <- read.table(args[2], sep = ",", header = T)
+no_cores <- 20
+cl <- makeCluster(no_cores)
+registerDoParallel(cl)
+result <- foreach(i=1:10000) %dopar% randFunc(pop$V1, length(sub$name), args[4], i)
+stopCluster(cl)
+
+result2 <- unlist(result)
+write.table(result2, args[3], row.names = F, sep = "\t", quote = F)
+```
+Example command:
+```{BASH, eval=F}
+module load gcc/7.3.0-xegsmw4
+module load r/4.0.2-py3-icvulwq
+module load gsl/2.5-fpqcpxf
+module load udunits/2.2.24-yldmp4h
+module load gdal/2.4.4-nw2drgf
+module load geos/3.8.1-2m7gav4
+
+Rscript --vanilla randomizationGO.R /work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/e9.5specific_ensGenes.txt /work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/STRING/e9.5/largestComponent/e9.5_3/e9.5_3_nodeTable.csv "/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/randomizationGO/e9.5_3_STRING_response to insulin.txt" "response to insulin"
+```
 ```{r}
 sessionInfo()
 ```
