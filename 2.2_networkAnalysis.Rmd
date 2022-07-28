@@ -288,6 +288,8 @@ length(setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene
 
 intersect(all, placenta$external_gene_name)
 setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name)
+
+setdiff(all, annot)
 ```
 
 Test if the number of known/implicated genes in the networks is significant: <br>

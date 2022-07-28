@@ -228,6 +228,7 @@ We can see the cluster trends agree with these of hierarchical clustering. <br>
 Hierarchical clustering, k = 4:
 ```{r}
 trans_cluster <- cutree(hc, k = 4) %>% enframe()
+write.table(trans_cluster, "Files/trans_cluster_hc_k4.txt", quote = F, row.names = F, sep = "\t")
 table(trans_cluster$value)
 summK3 <- summ(trans_cluster, tpm2)
 summK3$value <- ifelse(summK3$value == "1", "e8.5",
@@ -246,6 +247,7 @@ For K-means clustering: <br>
 set.seed(123)
 km <- kmeans(tpm2, centers = 4)
 trans_cluster_kmeans <- km$cluster %>% enframe()
+write.table(trans_cluster_kmeans, "Files/trans_cluster_kmeans_k4.txt", quote = F, row.names = F, sep = "\t")
 summKmeans <- summ(trans_cluster_kmeans, tpm2)
 
 plotClus(summKmeans, "K-means Clustering of Transcripts, k = 4")
@@ -321,6 +323,7 @@ for (i in 1:4) {
 Hierarchical clustering, k = 5:
 ```{r}
 trans_cluster <- cutree(hc, k = 5) %>% enframe()
+write.table(trans_cluster, "Files/trans_cluster_hc_k5.txt", quote = F, row.names = F, sep = "\t")
 table(trans_cluster$value)
 summK3 <- summ(trans_cluster, tpm2)
 summK3$value <- ifelse(summK3$value == "1", "e8.5",
@@ -339,6 +342,7 @@ For K-means clustering: <br>
 set.seed(123)
 km <- kmeans(tpm2, centers = 5)
 trans_cluster_kmeans <- km$cluster %>% enframe()
+write.table(trans_cluster, "Files/trans_cluster_kmeans_k5.txt", quote = F, row.names = F, sep = "\t")
 summKmeans <- summ(trans_cluster_kmeans, tpm2)
 
 plotClus(summKmeans, "K-means Clustering of Transcripts, k = 5")
