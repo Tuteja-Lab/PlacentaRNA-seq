@@ -244,6 +244,11 @@ length(setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene
 
 intersect(all, placenta$external_gene_name)
 setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name)
+
+intersect(all, placenta$external_gene_name)[order(intersect(all, placenta$external_gene_name))]
+setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name)[order(setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name))]
+setdiff(all, annot)[order(setdiff(all, annot))]
+all[order(all)]
 ```
 E8.5_1_STRING:
 ```{r}
@@ -264,6 +269,11 @@ length(setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene
 
 intersect(all, placenta$external_gene_name)
 setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name)
+
+intersect(all, placenta$external_gene_name)[order(intersect(all, placenta$external_gene_name))]
+setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name)[order(setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name))]
+setdiff(all, annot)[order(setdiff(all, annot))]
+all[order(all)]
 ```
 E9.5 networks:
 ```{r}
@@ -289,7 +299,10 @@ length(setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene
 intersect(all, placenta$external_gene_name)
 setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name)
 
-setdiff(all, annot)
+intersect(all, placenta$external_gene_name)[order(intersect(all, placenta$external_gene_name))]
+setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name)[order(setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name))]
+setdiff(all, annot)[order(setdiff(all, annot))]
+all[order(all)]
 ```
 
 Test if the number of known/implicated genes in the networks is significant: <br>

@@ -274,7 +274,7 @@ trans_cluster_som$name <- row.names(tpm2)
 ```
 Since this run could take time, I saved the results to reproduce the plot here. <br>
 ```{r}
-trans_cluster_som <- read.table("trans_cluster_som_k4.txt", header = T)
+trans_cluster_som <- read.table("Files/trans_cluster_som_k4.txt", header = T)
 summSOM <- summ(trans_cluster_som, tpm2)
 
 plotClus(summSOM, "Self-organizing Maps of Transcripts, k = 4")
@@ -302,7 +302,7 @@ colnames(trans_cluster_sc) <- c("name", "value")
 ```
 Plot of transcripts: <br>
 ```{r}
-trans_cluster_sc <- read.table("trans_cluster_sc_k4.txt", header = T)
+trans_cluster_sc <- read.table("Files/trans_cluster_sc_k4.txt", header = T)
 summSC <- summ(trans_cluster_sc, tpm2)
 
 plotClus(summSC, "Spectral Clustering of Transcripts")
@@ -342,7 +342,7 @@ For K-means clustering: <br>
 set.seed(123)
 km <- kmeans(tpm2, centers = 5)
 trans_cluster_kmeans <- km$cluster %>% enframe()
-write.table(trans_cluster, "Files/trans_cluster_kmeans_k5.txt", quote = F, row.names = F, sep = "\t")
+write.table(trans_cluster_kmeans, "Files/trans_cluster_kmeans_k5.txt", quote = F, row.names = F, sep = "\t")
 summKmeans <- summ(trans_cluster_kmeans, tpm2)
 
 plotClus(summKmeans, "K-means Clustering of Transcripts, k = 5")
@@ -369,7 +369,7 @@ trans_cluster_som$name <- row.names(tpm2)
 ```
 Since this run could take time, I saved the results to reproduce the plot here. <br>
 ```{r}
-trans_cluster_som <- read.table("trans_cluster_som_k5.txt", header = T)
+trans_cluster_som <- read.table("Files/trans_cluster_som_k5.txt", header = T)
 summSOM <- summ(trans_cluster_som, tpm2)
 
 plotClus(summSOM, "Self-organizing Maps of Transcripts, k = 5")
@@ -397,7 +397,7 @@ colnames(trans_cluster_sc) <- c("name", "value")
 ```
 Plot of transcripts: <br>
 ```{r}
-trans_cluster_sc <- read.table("trans_cluster_sc_k5.txt", header = T)
+trans_cluster_sc <- read.table("Files/trans_cluster_sc_k5.txt", header = T)
 summSC <- summ(trans_cluster_sc, tpm2)
 
 plotClus(summSC, "Spectral Clustering of Transcripts, k = 5")
