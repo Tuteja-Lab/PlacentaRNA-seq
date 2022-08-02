@@ -234,6 +234,11 @@ length(setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene
 
 intersect(all, placenta$external_gene_name)
 setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name)
+
+intersect(all, placenta$external_gene_name)[order(intersect(all, placenta$external_gene_name))]
+setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name)[order(setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name))]
+setdiff(all, annot)[order(setdiff(all, annot))]
+all[order(all)]
 ```
 E7.5_2_GENIE3:
 ```{r}
@@ -259,6 +264,11 @@ length(setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene
 
 intersect(all, placenta$external_gene_name)
 setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name)
+
+intersect(all, placenta$external_gene_name)[order(intersect(all, placenta$external_gene_name))]
+setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name)[order(setdiff(intersect(all, embryo$external_gene_name), placenta$external_gene_name))]
+setdiff(all, annot)[order(setdiff(all, annot))]
+all[order(all)]
 ```
 E8.5_2_GENIE3:
 ```{r}
@@ -308,10 +318,10 @@ all[order(all)]
 Test if the number of known/implicated genes in the networks is significant: <br>
 E7.5 genes in networks
 ```{r}
-genes <- read.table("Files/GENIE3/e7.5/e7.5_2/e7.5_2_nodeTable.csv", sep = ",", header = T)
-genes2 <- read.table("Files/STRING/e7.5/largestComponent/e7.5_1/e7.5_1_nodeTable.csv", sep = ",", header = T)
 t2g <- read.table("Files/t2g.txt", header = T)
-allGenes <- unique(c(t2g[t2g$ens_gene %in% genes$name, "ext_gene"], genes2$name))
+
+allGenes <- read.table("Files/e7.5specific_ensGenes.txt", header = F)
+allGenes <- unique(t2g[t2g$ens_gene %in% allGenes$V1, "ext_gene"])
 
 load("Files/STRING/e7.5/largestComponent/e7.5_1/e7.5_1_hubGenes.rda")
 temp <- all
@@ -323,7 +333,6 @@ t <- 0
 t2 <- c()
 for (i in 1:10000) {
   s <- sample(allGenes, 17)
-  #print(length(intersect(s, placenta$external_gene_name)))
   t2 <- c(t2, length(intersect(s, annot)))
   if (length(intersect(s, annot)) > length(intersect(all, annot))) {
     t <- t+1
@@ -331,17 +340,16 @@ for (i in 1:10000) {
 }
 t/10000
 t2<-as.data.frame(t2)
-ggplot(t2, aes(x = t2)) + geom_histogram(binwidth = 1) +
-    geom_vline(aes(xintercept = length(intersect(all, annot))), color="blue", linetype="dashed", size=1) +
-  ggtitle("e7.5 hub genes")
 
+ggplot(t2, aes(x = t2)) + geom_histogram(binwidth = 1, color="darkgreen", fill="#b8e186") +
+    geom_vline(aes(xintercept = length(intersect(all, annot))), color="black", linetype="dashed", size=1) +
+  ggtitle("e7.5 hub genes")
 ```
 
 E8.5 genes in networks
 ```{r}
-genes <- read.table("Files/GENIE3/e8.5/e8.5_2/e8.5_2_nodeTable.csv", sep = ",", header = T)
-genes2 <- read.table("Files/STRING/e8.5/largestComponent/e8.5_1/e8.5_1_nodeTable.csv", sep = ",", header = T)
-allGenes <- unique(c(t2g[t2g$ens_gene %in% genes$name, "ext_gene"], genes2$name))
+allGenes <- read.table("Files/e8.5specific_ensGenes.txt", header = F)
+allGenes <- unique(t2g[t2g$ens_gene %in% allGenes$V1, "ext_gene"])
 
 load("Files/STRING/e8.5/largestComponent/e8.5_1/e8.5_1_hubGenes.rda")
 temp <- all
@@ -361,26 +369,16 @@ for (i in 1:10000) {
 }
 t/10000
 t2<-as.data.frame(t2)
-ggplot(t2, aes(x = t2)) + geom_histogram(binwidth = 1) +
-    geom_vline(aes(xintercept = length(intersect(all, annot))), color="blue", linetype="dashed", size=1) +
+
+ggplot(t2, aes(x = t2)) + geom_histogram(binwidth = 1, color="darkblue", fill="lightblue") +
+    geom_vline(aes(xintercept = length(intersect(all, annot))), color="black", linetype="dashed", size=1) +
   ggtitle("e8.5 hub genes")
 ```
 
 E9.5 genes in networks
 ```{r}
-genes <- c()
-for (i in 1:3) {
-  f <- read.table(paste0("Files/GENIE3/e9.5/e9.5_", i, "/e9.5_", i, "_nodeTable.csv"), sep = ",", header = T)
-  genes <- c(genes, f$name)
-}
-
-genes2 <- c()
-for (i in 1:4) {
-  f <- read.table(paste0("Files/STRING/e9.5/largestComponent/e9.5_", i, "/e9.5_", i, "_nodeTable.csv"), sep = ",", header = T)
-  genes2 <- c(genes2, f$name)
-}
-
-allGenes <- unique(c(t2g[t2g$ens_gene %in% genes, "ext_gene"], genes2))
+allGenes <- read.table("Files/e9.5specific_ensGenes.txt", header = F)
+allGenes <- unique(t2g[t2g$ens_gene %in% allGenes$V1, "ext_gene"])
 
 load("Files/STRING/e9.5/largestComponent/e9.5_1/e9.5_1_hubGenes.rda")
 temp <- all
@@ -411,8 +409,9 @@ for (i in 1:10000) {
 }
 t/10000
 t2<-as.data.frame(t2)
-ggplot(t2, aes(x = t2)) + geom_histogram(binwidth = 1) +
-    geom_vline(aes(xintercept = length(intersect(all, annot))), color="blue", linetype="dashed", size=1) +
+
+ggplot(t2, aes(x = t2)) + geom_histogram(binwidth = 1, alpha=.2, fill="#FF6666", color="#841F27") +
+    geom_vline(aes(xintercept = length(intersect(all, annot))), color="black", linetype="dashed", size=1) +
   ggtitle("e9.5 hub genes")
 ```
 
@@ -506,12 +505,12 @@ randFunc <- function(pop, size, go_term, i) {
   return(p)
 }
 
-pop <- read.table(args[1], header = F)
+pop <- read.table(args[1], header = T)
 sub <- read.table(args[2], sep = ",", header = T)
 no_cores <- 20
 cl <- makeCluster(no_cores)
 registerDoParallel(cl)
-result <- foreach(i=1:10000) %dopar% randFunc(pop$V1, length(sub$name), args[4], i)
+result <- foreach(i=1:10000) %dopar% randFunc(unique(pop$ens_gene), length(sub$name), args[4], i)
 stopCluster(cl)
 
 result2 <- unlist(result)
@@ -526,7 +525,7 @@ module load udunits/2.2.24-yldmp4h
 module load gdal/2.4.4-nw2drgf
 module load geos/3.8.1-2m7gav4
 
-Rscript --vanilla randomizationGO.R /work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/e9.5specific_ensGenes.txt /work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/STRING/e9.5/largestComponent/e9.5_3/e9.5_3_nodeTable.csv "/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/randomizationGO/e9.5_3_STRING_response to insulin.txt" "response to insulin"
+Rscript --vanilla randomizationGO.R "/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/e7.5Group.txt" "/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/STRING/e7.5/largestComponent/e7.5_1/e7.5_1_nodeTable.csv" "/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/randomizationGO/e7.5_1_STRING_inflammatory response_qval.txt" "inflammatory response"
 ```
 ```{r}
 sessionInfo()
