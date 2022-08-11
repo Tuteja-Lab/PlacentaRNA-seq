@@ -1,0 +1,203 @@
+---
+title: "RNA-seq Mouse Placenta"
+author: "Ha T. H. Vu"
+output: html_document
+---
+  
+```{r setup, include=FALSE}
+options(max.print = "75")
+knitr::opts_chunk$set(
+  echo = TRUE,
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "Files/",
+  fig.width = 8,
+  prompt = FALSE,
+  tidy = FALSE,
+  message = FALSE,
+  warning = TRUE
+)
+knitr::opts_knit$set(width = 75)
+```
+
+Documentation for the analysis of mouse placental RNA-seq data at e7.5, e8.5 and e9.5. <br>
+
+Functions for PCE:
+```{r}
+loadInput <- function(type = c("STRING", "GENIE3"), time = c("e7.5", "e8.5", "e9.5"), i) {
+  if (type == "STRING") {
+    file <- read.table(paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/", type, "/", time, "/largestComponent/", time, "_", i, "/", time, "_", i, "_nodeTable.csv"), sep = ",", header = T)
+  } else {
+    file <- read.table(paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/", type, "/", time, "/", time, "_", i, "/", time, "_", i, "_nodeTable.csv"), sep = ",", header = T)
+  }
+  inputGenes <- file$name
+  
+  return(inputGenes)
+}
+
+library(TissueEnrich)
+library(ggplot2)
+
+load(file = "/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/combine-test-expression1.Rdata")
+
+mouseHumanOrthologs<-dataset$GRCH38$mouseHumanOrthologs
+humanGeneMapping<-dataset$GRCH38$humanGeneMapping
+
+#For VentoTormo Data
+d <- dataset$PlacentaDeciduaBloodData
+data <- d$expressionData
+cellDetails <- d$cellDetails
+organism <- "Mouse"
+
+runPCE <- function(inputGenes, nameType = c("Gene.name", "Gene.stable.ID")) {
+  if (nameType == "Gene.name") {
+    humanOrthologs <- mouseHumanOrthologs[mouseHumanOrthologs$Gene.name %in% toupper(inputGenes),]
+  } else {
+    humanOrthologs <- mouseHumanOrthologs[mouseHumanOrthologs$Gene.stable.ID %in% inputGenes,]
+  }
+  inputGenes <- humanOrthologs$Human.gene.stable.ID
+  expressionData <- data[intersect(row.names(data), mouseHumanOrthologs$Human.gene.stable.ID),]
+  se <- SummarizedExperiment(assays = SimpleList(as.matrix(expressionData)), rowData = row.names(expressionData), colData = colnames(expressionData))
+  cellSpecificGenesExp <- teGeneRetrieval(se, expressedGeneThreshold = 1)
+  print(paste("Number of input genes found is", length(inputGenes)))
+  gs <- GeneSet(geneIds=toupper(inputGenes))
+  output2 <- teEnrichmentCustom(gs, cellSpecificGenesExp)
+  enrichmentOutput <- setNames(data.frame(assay(output2[[1]]), row.names = rowData(output2[[1]])[,1]), colData(output2[[1]])[,1])
+  row.names(cellDetails) <- cellDetails$RName
+  enrichmentOutput$Tissue <- cellDetails[row.names(enrichmentOutput), "CellName"]
+  
+  return(output2)
+}
+```
+
+
+# 1. SCT cell:
+
+```{r}
+sheridan.sct <- read.table("/work/LAS/geetu-lab/hhvu/sheridan.et.al/5_DESeq2/sctSpecific.txt", header = T)
+```
+e8.5_2_GENIE3
+```{r}
+type <- "GENIE3"
+opt <- "Gene.stable.ID"
+time="e8.5"
+i=2
+load(paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/", type, "/", time, "/", time, "_", i, "/",
+            time, "_", i, "_hubGenes.rda"))
+inputGenes <- loadInput(type, time, i)
+enrichmentOutput <- runPCE(inputGenes, opt)
+intersect(toupper(all),
+          mouseHumanOrthologs[mouseHumanOrthologs$Human.gene.stable.ID %in% assay(enrichmentOutput[[2]]$SCT)[,1], "Gene.name"])
+intersect(sheridan.sct$x, mouseHumanOrthologs[mouseHumanOrthologs$Gene.name %in% toupper(all), "Human.gene.name"])
+```
+e9.5_1_GENIE3
+```{r}
+type <- "GENIE3"
+opt <- "Gene.stable.ID"
+time="e9.5"
+i=1
+load(paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/", type, "/", time, "/", time, "_", i, "/",
+            time, "_", i, "_hubGenes.rda"))
+inputGenes <- loadInput(type, time, i)
+enrichmentOutput <- runPCE(inputGenes, opt)
+intersect(toupper(all),
+          mouseHumanOrthologs[mouseHumanOrthologs$Human.gene.stable.ID %in% assay(enrichmentOutput[[2]]$SCT)[,1], "Gene.name"])
+intersect(sheridan.sct$x, mouseHumanOrthologs[mouseHumanOrthologs$Gene.name %in% toupper(all), "Human.gene.name"])
+```
+e9.5_2_STRING
+```{r}
+type <- "STRING"
+opt <- "Gene.name"
+time="e9.5"
+i=2
+load(paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/", type, "/", time, "/", "largestComponent/",
+            time, "_", i, "/", time, "_", i, "_hubGenes.rda"))
+inputGenes <- loadInput(type, time, i)
+enrichmentOutput <- runPCE(inputGenes, opt)
+intersect(toupper(all),
+          mouseHumanOrthologs[mouseHumanOrthologs$Human.gene.stable.ID %in% assay(enrichmentOutput[[2]]$SCT)[,1], "Gene.name"])
+intersect(sheridan.sct$x, mouseHumanOrthologs[mouseHumanOrthologs$Gene.name %in% toupper(all), "Human.gene.name"])
+```
+e9.5_3_STRING
+```{r}
+i=3
+load(paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/", type, "/", time, "/", "largestComponent/",
+            time, "_", i, "/", time, "_", i, "_hubGenes.rda"))
+inputGenes <- loadInput(type, time, i)
+enrichmentOutput <- runPCE(inputGenes, opt)
+intersect(toupper(all),
+          mouseHumanOrthologs[mouseHumanOrthologs$Human.gene.stable.ID %in% assay(enrichmentOutput[[2]]$SCT)[,1], "Gene.name"])
+intersect(sheridan.sct$x, mouseHumanOrthologs[mouseHumanOrthologs$Gene.name %in% toupper(all), "Human.gene.name"])
+```
+
+# 2. EVT cells:
+```{r}
+sheridan.evt <- read.table("/work/LAS/geetu-lab/hhvu/sheridan.et.al/5_DESeq2/evtSpecific.txt", header = T)
+```
+e7.5_2_GENIE3
+```{r}
+type <- "GENIE3"
+opt <- "Gene.stable.ID"
+time="e7.5"
+i=2
+load(paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/", type, "/", time, "/", time, "_", i, "/",
+            time, "_", i, "_hubGenes.rda"))
+inputGenes <- loadInput(type, time, i)
+enrichmentOutput <- runPCE(inputGenes, opt)
+intersect(toupper(all),
+          mouseHumanOrthologs[mouseHumanOrthologs$Human.gene.stable.ID %in% assay(enrichmentOutput[[2]]$EVT)[,1], "Gene.name"])
+intersect(sheridan.evt$x, mouseHumanOrthologs[mouseHumanOrthologs$Gene.name %in% toupper(all), "Human.gene.name"])
+```
+e9.5_2_STRING
+```{r}
+type <- "STRING"
+opt <- "Gene.name"
+time="e9.5"
+i=2
+load(paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/", type, "/", time, "/", "largestComponent/",
+            time, "_", i, "/", time, "_", i, "_hubGenes.rda"))
+inputGenes <- loadInput(type, time, i)
+enrichmentOutput <- runPCE(inputGenes, opt)
+intersect(toupper(all),
+          mouseHumanOrthologs[mouseHumanOrthologs$Human.gene.stable.ID %in% assay(enrichmentOutput[[2]]$EVT)[,1], "Gene.name"])
+intersect(sheridan.evt$x, mouseHumanOrthologs[mouseHumanOrthologs$Gene.name %in% toupper(all), "Human.gene.name"])
+```
+
+e9.5_1_GENIE3
+```{r}
+type <- "GENIE3"
+opt <- "Gene.stable.ID"
+time="e9.5"
+i=1
+load(paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/", type, "/", time, "/", time, "_", i, "/",
+            time, "_", i, "_hubGenes.rda"))
+inputGenes <- loadInput(type, time, i)
+enrichmentOutput <- runPCE(inputGenes, opt)
+intersect(toupper(all),
+          mouseHumanOrthologs[mouseHumanOrthologs$Human.gene.stable.ID %in% assay(enrichmentOutput[[2]]$EVT)[,1], "Gene.name"])
+intersect(sheridan.evt$x, mouseHumanOrthologs[mouseHumanOrthologs$Gene.name %in% toupper(all), "Human.gene.name"])
+```
+
+# PlacentaOntology enriched networks:
+e9.5_1_STRING
+```{r}
+type <- "STRING"
+opt <- "Gene.name"
+time="e9.5"
+i=1
+load(paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/", type, "/", time, "/", "largestComponent/",
+            time, "_", i, "/", time, "_", i, "_hubGenes.rda"))
+intersect(sheridan.evt$x, mouseHumanOrthologs[mouseHumanOrthologs$Gene.name %in% toupper(all), "Human.gene.name"])
+intersect(sheridan.sct$x, mouseHumanOrthologs[mouseHumanOrthologs$Gene.name %in% toupper(all), "Human.gene.name"])
+```
+e9.5_3_GENIE3
+```{r}
+type <- "GENIE3"
+opt <- "Gene.name"
+time="e9.5"
+i=3
+load(paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/", type, "/", time, "/", time, "_", i, "/",
+            time, "_", i, "_hubGenes.rda"))
+intersect(sheridan.evt$x, mouseHumanOrthologs[mouseHumanOrthologs$Gene.name %in% toupper(all), "Human.gene.name"])
+intersect(sheridan.sct$x, mouseHumanOrthologs[mouseHumanOrthologs$Gene.name %in% toupper(all), "Human.gene.name"])
+```
