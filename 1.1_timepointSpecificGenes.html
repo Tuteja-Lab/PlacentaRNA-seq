@@ -755,7 +755,7 @@ length(e9.5TFs)
 library(&quot;org.Mm.eg.db&quot;)
 
 go &lt;- function(subnetworkGenes) {
-  GO &lt;- enrichGO(gene = subnetworkGenes, OrgDb=org.Mm.eg.db, ont = &quot;BP&quot;, qvalueCutoff = 0.05, maxGSSize=1000, readable = T, keyType = &quot;ENSEMBL&quot;)
+  GO &lt;- enrichGO(gene = subnetworkGenes, OrgDb=org.Mm.eg.db, ont = &quot;BP&quot;, qvalueCutoff = 1, pvalueCutoff = 1, maxGSSize=1000, readable = T, keyType = &quot;ENSEMBL&quot;)
   goSimplify &lt;- GO
   simplify2 &lt;- as.data.frame(goSimplify)
   simplify2$GeneRatio &lt;- sapply(strsplit(simplify2$GeneRatio, &quot;/&quot;), function(x) as.numeric(x[1])/as.numeric(x[2]))
@@ -770,7 +770,7 @@ go &lt;- function(subnetworkGenes) {
 for (i in c(&quot;e7.5&quot;, &quot;e8.5&quot;, &quot;e9.5&quot;)) {
   genes &lt;- read.table(paste0(&quot;/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/&quot;, i, &quot;specific_TSS.bed&quot;), header = F)
   res &lt;- go(genes$V4)
-  #write.table(res, paste0(&quot;/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/additionalAnalyses/&quot;, i, &quot;specific_BP_filtered.txt&quot;), quote = F, sep = &quot;\t&quot;, row.names = F)
+  write.table(res, paste0(&quot;/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/additionalAnalyses/&quot;, i, &quot;specific_BP_filtered.txt&quot;), quote = F, sep = &quot;\t&quot;, row.names = F)
 }</code></pre>
 <p>E7.5-specific genes in general, and e7.5-specific genes that are unique to e7.5 timepoint (not present in any other timepoint).</p>
 <pre class="r"><code>e8.5 &lt;- read.table(&quot;Files/e8.5specific_ensGenes.txt&quot;, header = F)
@@ -783,10 +783,29 @@ length(e7.5$V1)
 length(trueE7.5)
 #&gt; [1] 880
 trueE7.5go &lt;- go(trueE7.5)
-#write.table(trueE7.5go, &quot;Files/trueE7.5go.txt&quot;, sep = &quot;\t&quot;, quote = F, row.names = F)
+write.table(trueE7.5go, &quot;Files/trueE7.5go.txt&quot;, sep = &quot;\t&quot;, quote = F, row.names = F)
 multiE7.5 &lt;- setdiff(e7.5$V1, trueE7.5)
+intersect(multiE7.5, e8.5$V1)
+#&gt;  [1] &quot;ENSMUSG00000029014&quot; &quot;ENSMUSG00000053398&quot; &quot;ENSMUSG00000034617&quot;
+#&gt;  [4] &quot;ENSMUSG00000041718&quot; &quot;ENSMUSG00000023088&quot; &quot;ENSMUSG00000024942&quot;
+#&gt;  [7] &quot;ENSMUSG00000017631&quot; &quot;ENSMUSG00000026103&quot; &quot;ENSMUSG00000028010&quot;
+#&gt; [10] &quot;ENSMUSG00000060036&quot; &quot;ENSMUSG00000048720&quot; &quot;ENSMUSG00000064210&quot;
+#&gt; [13] &quot;ENSMUSG00000025491&quot; &quot;ENSMUSG00000035621&quot; &quot;ENSMUSG00000042719&quot;
+#&gt; [16] &quot;ENSMUSG00000056851&quot; &quot;ENSMUSG00000010064&quot; &quot;ENSMUSG00000024213&quot;
+#&gt; [19] &quot;ENSMUSG00000024219&quot; &quot;ENSMUSG00000038371&quot; &quot;ENSMUSG00000005682&quot;
+#&gt; [22] &quot;ENSMUSG00000029560&quot; &quot;ENSMUSG00000021756&quot; &quot;ENSMUSG00000020923&quot;
+#&gt; [25] &quot;ENSMUSG00000030759&quot; &quot;ENSMUSG00000026566&quot; &quot;ENSMUSG00000029203&quot;
+#&gt; [28] &quot;ENSMUSG00000015002&quot; &quot;ENSMUSG00000018572&quot; &quot;ENSMUSG00000028936&quot;
+#&gt; [31] &quot;ENSMUSG00000042079&quot; &quot;ENSMUSG00000048120&quot; &quot;ENSMUSG00000036112&quot;
+#&gt; [34] &quot;ENSMUSG00000075703&quot; &quot;ENSMUSG00000020277&quot; &quot;ENSMUSG00000031557&quot;
+#&gt; [37] &quot;ENSMUSG00000050530&quot;
+intersect(multiE7.5, e9.5$V1)
+#&gt; [1] &quot;ENSMUSG00000019558&quot; &quot;ENSMUSG00000090841&quot; &quot;ENSMUSG00000023022&quot;
+#&gt; [4] &quot;ENSMUSG00000066640&quot; &quot;ENSMUSG00000026883&quot;
+
+
 e7.5specificTrans &lt;- read.table(&quot;Files/e7.5specific_trans.txt&quot;, header = F)
-write.table(t2g[t2g$ens_gene %in% multiE7.5 &amp; t2g$target_id %in% e7.5specificTrans$V1,], &quot;Files/multiE7.5.txt&quot;, sep = &quot;\t&quot;, quote = F, row.names = F)
+#write.table(t2g[t2g$ens_gene %in% multiE7.5 &amp; t2g$target_id %in% e7.5specificTrans$V1,], &quot;Files/multiE7.5.txt&quot;, sep = &quot;\t&quot;, quote = F, row.names = F)
 multiE7.5go &lt;- go(multiE7.5)
 #write.table(multiE7.5go, &quot;Files/multiE7.5go.txt&quot;, sep = &quot;\t&quot;, quote = F, row.names = F)
 
@@ -794,46 +813,53 @@ i&lt;-&quot;e7.5&quot;
 genes &lt;- read.table(paste0(&quot;/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/&quot;, i, &quot;specific_TSS.bed&quot;), header = F)
 res &lt;- go(genes$V4)
 setdiff(trueE7.5go$Description, res$Description)
-#&gt;  [1] &quot;negative regulation of cell population proliferation&quot;                                                                                            
-#&gt;  [2] &quot;metal ion homeostasis&quot;                                                                                                                           
-#&gt;  [3] &quot;cellular cation homeostasis&quot;                                                                                                                     
-#&gt;  [4] &quot;cellular metal ion homeostasis&quot;                                                                                                                  
-#&gt;  [5] &quot;positive regulation of secretion&quot;                                                                                                                
-#&gt;  [6] &quot;adaptive immune response&quot;                                                                                                                        
-#&gt;  [7] &quot;positive regulation of cytokine production&quot;                                                                                                      
-#&gt;  [8] &quot;ameboidal-type cell migration&quot;                                                                                                                   
-#&gt;  [9] &quot;positive regulation of cytosolic calcium ion concentration&quot;                                                                                      
-#&gt; [10] &quot;renal system development&quot;                                                                                                                        
-#&gt; [11] &quot;lymphocyte mediated immunity&quot;                                                                                                                    
-#&gt; [12] &quot;peptidyl-tyrosine phosphorylation&quot;                                                                                                               
-#&gt; [13] &quot;peptidyl-tyrosine modification&quot;                                                                                                                  
-#&gt; [14] &quot;kidney development&quot;                                                                                                                              
-#&gt; [15] &quot;regulation of cysteine-type endopeptidase activity&quot;                                                                                              
-#&gt; [16] &quot;positive regulation of developmental growth&quot;                                                                                                     
-#&gt; [17] &quot;regulation of myeloid cell differentiation&quot;                                                                                                      
-#&gt; [18] &quot;production of molecular mediator of immune response&quot;                                                                                             
-#&gt; [19] &quot;regulation of cysteine-type endopeptidase activity involved in apoptotic process&quot;                                                                
-#&gt; [20] &quot;regulation of myeloid leukocyte differentiation&quot;                                                                                                 
-#&gt; [21] &quot;CD4-positive, alpha-beta T cell differentiation&quot;                                                                                                 
-#&gt; [22] &quot;immune response-activating cell surface receptor signaling pathway&quot;                                                                              
-#&gt; [23] &quot;superoxide metabolic process&quot;                                                                                                                    
-#&gt; [24] &quot;immune response-activating signal transduction&quot;                                                                                                  
-#&gt; [25] &quot;nephron development&quot;                                                                                                                             
-#&gt; [26] &quot;regulation of nitric oxide biosynthetic process&quot;                                                                                                 
-#&gt; [27] &quot;negative regulation of cytokine secretion&quot;                                                                                                       
-#&gt; [28] &quot;negative regulation of axonogenesis&quot;                                                                                                             
-#&gt; [29] &quot;T cell activation involved in immune response&quot;                                                                                                   
-#&gt; [30] &quot;regulation of axon extension&quot;                                                                                                                    
-#&gt; [31] &quot;negative regulation of developmental growth&quot;                                                                                                     
-#&gt; [32] &quot;lymphocyte apoptotic process&quot;                                                                                                                    
-#&gt; [33] &quot;regulation of macrophage activation&quot;                                                                                                             
-#&gt; [34] &quot;negative regulation of adaptive immune response based on somatic recombination of immune receptors built from immunoglobulin superfamily domains&quot;
-#&gt; [35] &quot;positive regulation of phospholipase activity&quot;                                                                                                   
-#&gt; [36] &quot;cortical actin cytoskeleton organization&quot;                                                                                                        
-#&gt; [37] &quot;modulation by symbiont of host process&quot;                                                                                                          
-#&gt; [38] &quot;positive regulation of myeloid cell differentiation&quot;                                                                                             
-#&gt; [39] &quot;membrane lipid biosynthetic process&quot;                                                                                                             
-#&gt; [40] &quot;positive regulation of epithelial cell proliferation&quot;
+#&gt;  [1] &quot;negative regulation of cell population proliferation&quot;                            
+#&gt;  [2] &quot;metal ion homeostasis&quot;                                                           
+#&gt;  [3] &quot;cellular cation homeostasis&quot;                                                     
+#&gt;  [4] &quot;cellular metal ion homeostasis&quot;                                                  
+#&gt;  [5] &quot;positive regulation of secretion&quot;                                                
+#&gt;  [6] &quot;adaptive immune response&quot;                                                        
+#&gt;  [7] &quot;positive regulation of cytokine production&quot;                                      
+#&gt;  [8] &quot;ameboidal-type cell migration&quot;                                                   
+#&gt;  [9] &quot;positive regulation of cytosolic calcium ion concentration&quot;                      
+#&gt; [10] &quot;renal system development&quot;                                                        
+#&gt; [11] &quot;lymphocyte mediated immunity&quot;                                                    
+#&gt; [12] &quot;peptidyl-tyrosine phosphorylation&quot;                                               
+#&gt; [13] &quot;peptidyl-tyrosine modification&quot;                                                  
+#&gt; [14] &quot;kidney development&quot;                                                              
+#&gt; [15] &quot;regulation of cysteine-type endopeptidase activity&quot;                              
+#&gt; [16] &quot;positive regulation of developmental growth&quot;                                     
+#&gt; [17] &quot;regulation of myeloid cell differentiation&quot;                                      
+#&gt; [18] &quot;production of molecular mediator of immune response&quot;                             
+#&gt; [19] &quot;regulation of cysteine-type endopeptidase activity involved in apoptotic process&quot;
+#&gt; [20] &quot;immune response-activating cell surface receptor signaling pathway&quot;              
+#&gt; [21] &quot;immune response-activating signal transduction&quot;                                  
+#&gt; [22] &quot;positive regulation of epithelial cell proliferation&quot;                            
+#&gt; [23] &quot;T cell differentiation involved in immune response&quot;                              
+#&gt; [24] &quot;positive regulation of peptidase activity&quot;                                       
+#&gt; [25] &quot;macrophage migration&quot;                                                            
+#&gt; [26] &quot;positive regulation of calcium ion transport&quot;                                    
+#&gt; [27] &quot;positive regulation of production of molecular mediator of immune response&quot;      
+#&gt; [28] &quot;regulation of calcium-mediated signaling&quot;                                        
+#&gt; [29] &quot;bicellular tight junction assembly&quot;                                              
+#&gt; [30] &quot;iron ion homeostasis&quot;                                                            
+#&gt; [31] &quot;negative regulation of cysteine-type endopeptidase activity&quot;                     
+#&gt; [32] &quot;cellular response to oxygen levels&quot;                                              
+#&gt; [33] &quot;T cell apoptotic process&quot;                                                        
+#&gt; [34] &quot;positive regulation of acute inflammatory response&quot;                              
+#&gt; [35] &quot;regulation of type 2 immune response&quot;                                            
+#&gt; [36] &quot;pyrimidine nucleotide metabolic process&quot;                                         
+#&gt; [37] &quot;negative regulation of interferon-gamma production&quot;                              
+#&gt; [38] &quot;negative regulation of mononuclear cell proliferation&quot;                           
+#&gt; [39] &quot;negative regulation of lymphocyte proliferation&quot;                                 
+#&gt; [40] &quot;regulation of lipase activity&quot;                                                   
+#&gt; [41] &quot;platelet aggregation&quot;                                                            
+#&gt; [42] &quot;positive regulation of kidney development&quot;                                       
+#&gt; [43] &quot;tight junction assembly&quot;                                                         
+#&gt; [44] &quot;neural crest cell migration&quot;                                                     
+#&gt; [45] &quot;cellular iron ion homeostasis&quot;                                                   
+#&gt; [46] &quot;positive regulation of leukocyte mediated immunity&quot;                              
+#&gt; [47] &quot;positive regulation of cytokine secretion&quot;
 setdiff(res$Description, trueE7.5go$Description)
 #&gt;  [1] &quot;organophosphate metabolic process&quot;                                     
 #&gt;  [2] &quot;nucleoside phosphate metabolic process&quot;                                
@@ -848,46 +874,47 @@ setdiff(res$Description, trueE7.5go$Description)
 #&gt; [11] &quot;intrinsic apoptotic signaling pathway&quot;                                 
 #&gt; [12] &quot;negative regulation of secretion&quot;                                      
 #&gt; [13] &quot;cellular amino acid biosynthetic process&quot;                              
-#&gt; [14] &quot;organophosphate ester transport&quot;                                       
-#&gt; [15] &quot;regulation of leukocyte adhesion to vascular endothelial cell&quot;         
-#&gt; [16] &quot;ATP metabolic process&quot;                                                 
-#&gt; [17] &quot;glutamine metabolic process&quot;                                           
-#&gt; [18] &quot;negative regulation of supramolecular fiber organization&quot;              
-#&gt; [19] &quot;monocarboxylic acid transport&quot;                                         
-#&gt; [20] &quot;regulation of cellular extravasation&quot;                                  
-#&gt; [21] &quot;viral life cycle&quot;                                                      
-#&gt; [22] &quot;toll-like receptor 4 signaling pathway&quot;                                
-#&gt; [23] &quot;positive regulation of cellular extravasation&quot;                         
-#&gt; [24] &quot;positive regulation of cardiac muscle cell apoptotic process&quot;          
-#&gt; [25] &quot;viral genome replication&quot;                                              
-#&gt; [26] &quot;regulation of cardiac muscle cell apoptotic process&quot;                   
-#&gt; [27] &quot;negative regulation of viral genome replication&quot;                       
-#&gt; [28] &quot;neutrophil mediated immunity&quot;                                          
-#&gt; [29] &quot;negative regulation of cytoskeleton organization&quot;                      
-#&gt; [30] &quot;positive regulation of striated muscle cell apoptotic process&quot;         
-#&gt; [31] &quot;vascular endothelial growth factor signaling pathway&quot;                  
-#&gt; [32] &quot;negative regulation of cellular carbohydrate metabolic process&quot;        
-#&gt; [33] &quot;regulation of type I interferon-mediated signaling pathway&quot;            
-#&gt; [34] &quot;regulation of striated muscle cell apoptotic process&quot;                  
-#&gt; [35] &quot;negative regulation of autophagy&quot;                                      
-#&gt; [36] &quot;negative regulation of peptide secretion&quot;                              
-#&gt; [37] &quot;contractile actin filament bundle assembly&quot;                            
-#&gt; [38] &quot;stress fiber assembly&quot;                                                 
-#&gt; [39] &quot;regulation of viral process&quot;                                           
-#&gt; [40] &quot;energy reserve metabolic process&quot;                                      
-#&gt; [41] &quot;alpha-amino acid metabolic process&quot;                                    
-#&gt; [42] &quot;negative regulation of protein-containing complex assembly&quot;            
-#&gt; [43] &quot;endothelial cell migration&quot;                                            
-#&gt; [44] &quot;regulation of macroautophagy&quot;                                          
-#&gt; [45] &quot;cellular polysaccharide metabolic process&quot;                             
-#&gt; [46] &quot;negative regulation of ATP metabolic process&quot;                          
-#&gt; [47] &quot;negative regulation of cytokine-mediated signaling pathway&quot;            
-#&gt; [48] &quot;negative regulation of carbohydrate metabolic process&quot;                 
-#&gt; [49] &quot;regulation of bone mineralization&quot;                                     
-#&gt; [50] &quot;negative regulation of protein secretion&quot;                              
-#&gt; [51] &quot;regulation of viral genome replication&quot;                                
-#&gt; [52] &quot;positive regulation of muscle cell apoptotic process&quot;                  
-#&gt; [53] &quot;inositol phosphate metabolic process&quot;</code></pre>
+#&gt; [14] &quot;regulation of leukocyte adhesion to vascular endothelial cell&quot;         
+#&gt; [15] &quot;ATP metabolic process&quot;                                                 
+#&gt; [16] &quot;glutamine metabolic process&quot;                                           
+#&gt; [17] &quot;monocarboxylic acid transport&quot;                                         
+#&gt; [18] &quot;regulation of cellular extravasation&quot;                                  
+#&gt; [19] &quot;viral life cycle&quot;                                                      
+#&gt; [20] &quot;toll-like receptor 4 signaling pathway&quot;                                
+#&gt; [21] &quot;positive regulation of cellular extravasation&quot;                         
+#&gt; [22] &quot;positive regulation of cardiac muscle cell apoptotic process&quot;          
+#&gt; [23] &quot;viral genome replication&quot;                                              
+#&gt; [24] &quot;neutrophil mediated immunity&quot;                                          
+#&gt; [25] &quot;negative regulation of cytoskeleton organization&quot;                      
+#&gt; [26] &quot;positive regulation of striated muscle cell apoptotic process&quot;         
+#&gt; [27] &quot;vascular endothelial growth factor signaling pathway&quot;                  
+#&gt; [28] &quot;negative regulation of cellular carbohydrate metabolic process&quot;        
+#&gt; [29] &quot;regulation of type I interferon-mediated signaling pathway&quot;            
+#&gt; [30] &quot;regulation of striated muscle cell apoptotic process&quot;                  
+#&gt; [31] &quot;negative regulation of autophagy&quot;                                      
+#&gt; [32] &quot;negative regulation of peptide secretion&quot;                              
+#&gt; [33] &quot;energy reserve metabolic process&quot;                                      
+#&gt; [34] &quot;alpha-amino acid metabolic process&quot;                                    
+#&gt; [35] &quot;endothelial cell migration&quot;                                            
+#&gt; [36] &quot;regulation of macroautophagy&quot;                                          
+#&gt; [37] &quot;cellular polysaccharide metabolic process&quot;                             
+#&gt; [38] &quot;negative regulation of ATP metabolic process&quot;                          
+#&gt; [39] &quot;negative regulation of cytokine-mediated signaling pathway&quot;            
+#&gt; [40] &quot;negative regulation of carbohydrate metabolic process&quot;                 
+#&gt; [41] &quot;regulation of bone mineralization&quot;                                     
+#&gt; [42] &quot;negative regulation of protein secretion&quot;                              
+#&gt; [43] &quot;regulation of viral genome replication&quot;                                
+#&gt; [44] &quot;positive regulation of muscle cell apoptotic process&quot;                  
+#&gt; [45] &quot;inositol phosphate metabolic process&quot;                                  
+#&gt; [46] &quot;blood coagulation&quot;                                                     
+#&gt; [47] &quot;regulation of endothelial cell migration&quot;                              
+#&gt; [48] &quot;negative regulation of macroautophagy&quot;                                 
+#&gt; [49] &quot;hemostasis&quot;                                                            
+#&gt; [50] &quot;coagulation&quot;                                                           
+#&gt; [51] &quot;phosphatidylinositol 3-kinase signaling&quot;                               
+#&gt; [52] &quot;positive regulation of tyrosine phosphorylation of STAT protein&quot;       
+#&gt; [53] &quot;positive regulation of response to cytokine stimulus&quot;                  
+#&gt; [54] &quot;negative regulation of response to cytokine stimulus&quot;</code></pre>
 <p>E8.5-specific genes in general, and e8.5-specific genes that are unique to e8.5 timepoint (not present in any other timepoint).</p>
 <pre class="r"><code>trueE8.5 &lt;- setdiff(setdiff(e8.5$V1, e7.5$V1), e9.5$V1)
 length(e8.5$V1)
@@ -895,8 +922,50 @@ length(e8.5$V1)
 length(trueE8.5)
 #&gt; [1] 769
 trueE8.5go &lt;- go(trueE8.5)
-#write.table(trueE8.5go, &quot;Files/trueE8.5go.txt&quot;, sep = &quot;\t&quot;, quote = F, row.names = F)
+write.table(trueE8.5go, &quot;Files/trueE8.5go.txt&quot;, sep = &quot;\t&quot;, quote = F, row.names = F)
 multiE8.5 &lt;- setdiff(e8.5$V1, trueE8.5)
+intersect(multiE8.5, e7.5$V1)
+#&gt;  [1] &quot;ENSMUSG00000029014&quot; &quot;ENSMUSG00000053398&quot; &quot;ENSMUSG00000034617&quot;
+#&gt;  [4] &quot;ENSMUSG00000041718&quot; &quot;ENSMUSG00000023088&quot; &quot;ENSMUSG00000024942&quot;
+#&gt;  [7] &quot;ENSMUSG00000017631&quot; &quot;ENSMUSG00000026103&quot; &quot;ENSMUSG00000028010&quot;
+#&gt; [10] &quot;ENSMUSG00000060036&quot; &quot;ENSMUSG00000048720&quot; &quot;ENSMUSG00000064210&quot;
+#&gt; [13] &quot;ENSMUSG00000025491&quot; &quot;ENSMUSG00000035621&quot; &quot;ENSMUSG00000042719&quot;
+#&gt; [16] &quot;ENSMUSG00000056851&quot; &quot;ENSMUSG00000010064&quot; &quot;ENSMUSG00000024213&quot;
+#&gt; [19] &quot;ENSMUSG00000024219&quot; &quot;ENSMUSG00000038371&quot; &quot;ENSMUSG00000005682&quot;
+#&gt; [22] &quot;ENSMUSG00000029560&quot; &quot;ENSMUSG00000021756&quot; &quot;ENSMUSG00000020923&quot;
+#&gt; [25] &quot;ENSMUSG00000030759&quot; &quot;ENSMUSG00000026566&quot; &quot;ENSMUSG00000029203&quot;
+#&gt; [28] &quot;ENSMUSG00000015002&quot; &quot;ENSMUSG00000018572&quot; &quot;ENSMUSG00000028936&quot;
+#&gt; [31] &quot;ENSMUSG00000042079&quot; &quot;ENSMUSG00000048120&quot; &quot;ENSMUSG00000036112&quot;
+#&gt; [34] &quot;ENSMUSG00000075703&quot; &quot;ENSMUSG00000020277&quot; &quot;ENSMUSG00000031557&quot;
+#&gt; [37] &quot;ENSMUSG00000050530&quot;
+intersect(multiE8.5, e9.5$V1)
+#&gt;  [1] &quot;ENSMUSG00000020422&quot; &quot;ENSMUSG00000028654&quot; &quot;ENSMUSG00000023079&quot;
+#&gt;  [4] &quot;ENSMUSG00000031010&quot; &quot;ENSMUSG00000040857&quot; &quot;ENSMUSG00000003309&quot;
+#&gt;  [7] &quot;ENSMUSG00000023411&quot; &quot;ENSMUSG00000044864&quot; &quot;ENSMUSG00000021273&quot;
+#&gt; [10] &quot;ENSMUSG00000032702&quot; &quot;ENSMUSG00000032405&quot; &quot;ENSMUSG00000036580&quot;
+#&gt; [13] &quot;ENSMUSG00000018428&quot; &quot;ENSMUSG00000027303&quot; &quot;ENSMUSG00000026202&quot;
+#&gt; [16] &quot;ENSMUSG00000027624&quot; &quot;ENSMUSG00000022464&quot; &quot;ENSMUSG00000020186&quot;
+#&gt; [19] &quot;ENSMUSG00000031161&quot; &quot;ENSMUSG00000040268&quot; &quot;ENSMUSG00000041408&quot;
+#&gt; [22] &quot;ENSMUSG00000026409&quot; &quot;ENSMUSG00000033075&quot; &quot;ENSMUSG00000032531&quot;
+#&gt; [25] &quot;ENSMUSG00000041757&quot; &quot;ENSMUSG00000033170&quot; &quot;ENSMUSG00000061411&quot;
+#&gt; [28] &quot;ENSMUSG00000039231&quot; &quot;ENSMUSG00000046671&quot; &quot;ENSMUSG00000040606&quot;
+#&gt; [31] &quot;ENSMUSG00000026107&quot; &quot;ENSMUSG00000031099&quot; &quot;ENSMUSG00000020782&quot;
+#&gt; [34] &quot;ENSMUSG00000060012&quot; &quot;ENSMUSG00000029833&quot; &quot;ENSMUSG00000081044&quot;
+#&gt; [37] &quot;ENSMUSG00000026623&quot; &quot;ENSMUSG00000039988&quot; &quot;ENSMUSG00000009569&quot;
+#&gt; [40] &quot;ENSMUSG00000039831&quot; &quot;ENSMUSG00000035914&quot; &quot;ENSMUSG00000018819&quot;
+#&gt; [43] &quot;ENSMUSG00000042724&quot; &quot;ENSMUSG00000032883&quot; &quot;ENSMUSG00000063382&quot;
+#&gt; [46] &quot;ENSMUSG00000041220&quot; &quot;ENSMUSG00000032015&quot; &quot;ENSMUSG00000024308&quot;
+#&gt; [49] &quot;ENSMUSG00000021604&quot; &quot;ENSMUSG00000041354&quot; &quot;ENSMUSG00000032010&quot;
+#&gt; [52] &quot;ENSMUSG00000025665&quot; &quot;ENSMUSG00000084128&quot; &quot;ENSMUSG00000040785&quot;
+#&gt; [55] &quot;ENSMUSG00000027510&quot; &quot;ENSMUSG00000066735&quot; &quot;ENSMUSG00000028906&quot;
+#&gt; [58] &quot;ENSMUSG00000025451&quot; &quot;ENSMUSG00000053436&quot; &quot;ENSMUSG00000042659&quot;
+#&gt; [61] &quot;ENSMUSG00000024098&quot; &quot;ENSMUSG00000053754&quot; &quot;ENSMUSG00000025381&quot;
+#&gt; [64] &quot;ENSMUSG00000001472&quot; &quot;ENSMUSG00000039470&quot; &quot;ENSMUSG00000003308&quot;
+#&gt; [67] &quot;ENSMUSG00000041870&quot; &quot;ENSMUSG00000032216&quot; &quot;ENSMUSG00000003731&quot;
+#&gt; [70] &quot;ENSMUSG00000030172&quot; &quot;ENSMUSG00000050627&quot; &quot;ENSMUSG00000029722&quot;
+#&gt; [73] &quot;ENSMUSG00000061393&quot; &quot;ENSMUSG00000042507&quot; &quot;ENSMUSG00000025764&quot;
+#&gt;  [ reached getOption(&quot;max.print&quot;) -- omitted 34 entries ]
+
 e8.5specificTrans &lt;- read.table(&quot;Files/e8.5specific_trans.txt&quot;, header = F)
 write.table(t2g[t2g$ens_gene %in% multiE8.5 &amp; t2g$target_id %in% e8.5specificTrans$V1,], &quot;Files/multiE8.5.txt&quot;, sep = &quot;\t&quot;, quote = F, row.names = F)
 multiE8.5go &lt;- go(multiE8.5)
@@ -919,133 +988,132 @@ setdiff(trueE8.5go$Description, res$Description)
 #&gt; [11] &quot;regulation of MAP kinase activity&quot;                                       
 #&gt; [12] &quot;meiotic cell cycle&quot;                                                      
 #&gt; [13] &quot;cardiac chamber development&quot;                                             
-#&gt; [14] &quot;gene silencing by RNA&quot;                                                   
-#&gt; [15] &quot;sulfur compound metabolic process&quot;                                       
-#&gt; [16] &quot;steroid hormone mediated signaling pathway&quot;                              
-#&gt; [17] &quot;positive regulation of protein serine/threonine kinase activity&quot;         
-#&gt; [18] &quot;positive regulation of DNA repair&quot;                                       
-#&gt; [19] &quot;spindle organization&quot;                                                    
-#&gt; [20] &quot;ribonucleoprotein complex export from nucleus&quot;                           
-#&gt; [21] &quot;negative regulation of DNA binding&quot;                                      
-#&gt; [22] &quot;regulation of telomere maintenance&quot;                                      
-#&gt; [23] &quot;ribonucleoprotein complex localization&quot;                                  
-#&gt; [24] &quot;organic hydroxy compound biosynthetic process&quot;                           
-#&gt; [25] &quot;membrane protein ectodomain proteolysis&quot;                                 
-#&gt; [26] &quot;Schwann cell differentiation&quot;                                            
-#&gt; [27] &quot;positive regulation of receptor internalization&quot;                         
-#&gt; [28] &quot;nucleoside monophosphate biosynthetic process&quot;                           
-#&gt; [29] &quot;pericardium development&quot;                                                 
-#&gt; [30] &quot;regulation of transcription initiation from RNA polymerase II promoter&quot;  
-#&gt; [31] &quot;regulation of intrinsic apoptotic signaling pathway&quot;                     
-#&gt; [32] &quot;mitotic metaphase plate congression&quot;                                     
-#&gt; [33] &quot;regulation of establishment of planar polarity&quot;                          
-#&gt; [34] &quot;regulation of DNA-templated transcription in response to stress&quot;         
-#&gt; [35] &quot;endoderm development&quot;                                                    
-#&gt; [36] &quot;anterior/posterior pattern specification&quot;                                
-#&gt; [37] &quot;embryonic skeletal system morphogenesis&quot;                                 
-#&gt; [38] &quot;rRNA transcription&quot;                                                      
-#&gt; [39] &quot;cardiac epithelial to mesenchymal transition&quot;                            
-#&gt; [40] &quot;metaphase plate congression&quot;                                             
-#&gt; [41] &quot;spindle assembly&quot;                                                        
-#&gt; [42] &quot;cerebral cortex development&quot;                                             
-#&gt; [43] &quot;blastocyst growth&quot;                                                       
-#&gt; [44] &quot;positive regulation of DNA-templated transcription, initiation&quot;          
-#&gt; [45] &quot;mesenchymal cell development&quot;                                            
-#&gt; [46] &quot;ubiquitin-dependent ERAD pathway&quot;                                        
-#&gt; [47] &quot;positive regulation of JNK cascade&quot;                                      
-#&gt; [48] &quot;inner ear receptor cell development&quot;                                     
-#&gt; [49] &quot;axis specification&quot;                                                      
-#&gt; [50] &quot;hair follicle development&quot;                                               
-#&gt; [51] &quot;camera-type eye morphogenesis&quot;                                           
-#&gt; [52] &quot;negative regulation of stress-activated MAPK cascade&quot;                    
-#&gt; [53] &quot;negative regulation of stress-activated protein kinase signaling cascade&quot;
-#&gt; [54] &quot;acetyl-CoA metabolic process&quot;                                            
-#&gt; [55] &quot;Schwann cell development&quot;                                                
-#&gt; [56] &quot;positive regulation of viral genome replication&quot;                         
-#&gt; [57] &quot;molting cycle process&quot;                                                   
-#&gt; [58] &quot;hair cycle process&quot;                                                      
-#&gt; [59] &quot;skin epidermis development&quot;                                              
-#&gt; [60] &quot;postsynaptic membrane organization&quot;                                      
-#&gt; [61] &quot;transcription elongation from RNA polymerase II promoter&quot;                
-#&gt; [62] &quot;regulation of cyclin-dependent protein serine/threonine kinase activity&quot; 
-#&gt; [63] &quot;cell-cell junction assembly&quot;
+#&gt; [14] &quot;sulfur compound metabolic process&quot;                                       
+#&gt; [15] &quot;positive regulation of protein serine/threonine kinase activity&quot;         
+#&gt; [16] &quot;spindle organization&quot;                                                    
+#&gt; [17] &quot;organic hydroxy compound biosynthetic process&quot;                           
+#&gt; [18] &quot;regulation of intrinsic apoptotic signaling pathway&quot;                     
+#&gt; [19] &quot;endoderm development&quot;                                                    
+#&gt; [20] &quot;anterior/posterior pattern specification&quot;                                
+#&gt; [21] &quot;embryonic skeletal system morphogenesis&quot;                                 
+#&gt; [22] &quot;metaphase plate congression&quot;                                             
+#&gt; [23] &quot;spindle assembly&quot;                                                        
+#&gt; [24] &quot;cerebral cortex development&quot;                                             
+#&gt; [25] &quot;blastocyst growth&quot;                                                       
+#&gt; [26] &quot;positive regulation of DNA-templated transcription, initiation&quot;          
+#&gt; [27] &quot;mesenchymal cell development&quot;                                            
+#&gt; [28] &quot;ubiquitin-dependent ERAD pathway&quot;                                        
+#&gt; [29] &quot;inner ear receptor cell development&quot;                                     
+#&gt; [30] &quot;axis specification&quot;                                                      
+#&gt; [31] &quot;hair follicle development&quot;                                               
+#&gt; [32] &quot;camera-type eye morphogenesis&quot;                                           
+#&gt; [33] &quot;negative regulation of stress-activated MAPK cascade&quot;                    
+#&gt; [34] &quot;negative regulation of stress-activated protein kinase signaling cascade&quot;
+#&gt; [35] &quot;acetyl-CoA metabolic process&quot;                                            
+#&gt; [36] &quot;Schwann cell development&quot;                                                
+#&gt; [37] &quot;positive regulation of viral genome replication&quot;                         
+#&gt; [38] &quot;molting cycle process&quot;                                                   
+#&gt; [39] &quot;hair cycle process&quot;                                                      
+#&gt; [40] &quot;skin epidermis development&quot;                                              
+#&gt; [41] &quot;postsynaptic membrane organization&quot;                                      
+#&gt; [42] &quot;transcription elongation from RNA polymerase II promoter&quot;                
+#&gt; [43] &quot;regulation of cyclin-dependent protein serine/threonine kinase activity&quot; 
+#&gt; [44] &quot;endocardial cushion morphogenesis&quot;                                       
+#&gt; [45] &quot;spliceosomal complex assembly&quot;                                           
+#&gt; [46] &quot;endocytic recycling&quot;                                                     
+#&gt; [47] &quot;biological phase&quot;                                                        
+#&gt; [48] &quot;negative regulation of DNA recombination&quot;                                
+#&gt; [49] &quot;cardiac ventricle development&quot;                                           
+#&gt; [50] &quot;sterol metabolic process&quot;                                                
+#&gt; [51] &quot;regulation of alternative mRNA splicing, via spliceosome&quot;                
+#&gt; [52] &quot;regulation of telomere maintenance via telomere lengthening&quot;             
+#&gt; [53] &quot;ERAD pathway&quot;                                                            
+#&gt; [54] &quot;regulation of axon regeneration&quot;                                         
+#&gt; [55] &quot;DNA-dependent DNA replication&quot;                                           
+#&gt; [56] &quot;negative regulation of intrinsic apoptotic signaling pathway&quot;            
+#&gt; [57] &quot;regulation of mitotic metaphase/anaphase transition&quot;                     
+#&gt; [58] &quot;regulation of DNA-dependent DNA replication&quot;                             
+#&gt; [59] &quot;regulation of transcription elongation from RNA polymerase II promoter&quot;  
+#&gt; [60] &quot;nerve development&quot;                                                       
+#&gt; [61] &quot;regulation of cyclin-dependent protein kinase activity&quot;                  
+#&gt; [62] &quot;secondary alcohol metabolic process&quot;
 setdiff(res$Description, trueE8.5go$Description) #only here has labyrinth terms
 #&gt;  [1] &quot;proteolysis involved in cellular protein catabolic process&quot;                            
 #&gt;  [2] &quot;cellular protein catabolic process&quot;                                                    
 #&gt;  [3] &quot;modification-dependent macromolecule catabolic process&quot;                                
-#&gt;  [4] &quot;cortical cytoskeleton organization&quot;                                                    
-#&gt;  [5] &quot;embryonic placenta morphogenesis&quot;                                                      
-#&gt;  [6] &quot;cortical actin cytoskeleton organization&quot;                                              
-#&gt;  [7] &quot;regulation of Wnt signaling pathway&quot;                                                   
-#&gt;  [8] &quot;regulation of canonical Wnt signaling pathway&quot;                                         
-#&gt;  [9] &quot;N-terminal protein amino acid modification&quot;                                            
-#&gt; [10] &quot;regulation of muscle adaptation&quot;                                                       
-#&gt; [11] &quot;negative regulation of Wnt signaling pathway&quot;                                          
-#&gt; [12] &quot;viral process&quot;                                                                         
-#&gt; [13] &quot;regulation of transmembrane receptor protein serine/threonine kinase signaling pathway&quot;
-#&gt; [14] &quot;inner ear auditory receptor cell differentiation&quot;                                      
-#&gt; [15] &quot;receptor metabolic process&quot;                                                            
-#&gt; [16] &quot;negative regulation of ubiquitin-dependent protein catabolic process&quot;                  
-#&gt; [17] &quot;response to transforming growth factor beta&quot;                                           
-#&gt; [18] &quot;heterochromatin organization&quot;                                                          
-#&gt; [19] &quot;gland morphogenesis&quot;                                                                   
-#&gt; [20] &quot;transforming growth factor beta receptor signaling pathway&quot;                            
-#&gt; [21] &quot;positive regulation of protein modification by small protein conjugation or removal&quot;   
-#&gt; [22] &quot;regulation of epidermal cell differentiation&quot;                                          
-#&gt; [23] &quot;hair cell differentiation&quot;                                                             
-#&gt; [24] &quot;heterochromatin assembly&quot;                                                              
-#&gt; [25] &quot;phospholipid transport&quot;                                                                
-#&gt; [26] &quot;DNA modification&quot;                                                                      
-#&gt; [27] &quot;dendritic spine morphogenesis&quot;                                                         
-#&gt; [28] &quot;positive regulation of transcription by RNA polymerase I&quot;                              
-#&gt; [29] &quot;positive regulation of proteasomal ubiquitin-dependent protein catabolic process&quot;      
-#&gt; [30] &quot;viral gene expression&quot;                                                                 
-#&gt; [31] &quot;ATP-dependent chromatin remodeling&quot;                                                    
-#&gt; [32] &quot;regulation of receptor internalization&quot;                                                
-#&gt; [33] &quot;regulation of protein import&quot;                                                          
-#&gt; [34] &quot;regulation of transcription by RNA polymerase I&quot;                                       
-#&gt; [35] &quot;positive regulation of striated muscle tissue development&quot;                             
-#&gt; [36] &quot;positive regulation of muscle organ development&quot;                                       
-#&gt; [37] &quot;cellular response to transforming growth factor beta stimulus&quot;                         
-#&gt; [38] &quot;positive regulation of muscle tissue development&quot;                                      
-#&gt; [39] &quot;lung development&quot;                                                                      
-#&gt; [40] &quot;positive regulation of protein ubiquitination&quot;                                         
-#&gt; [41] &quot;regulation of dendrite morphogenesis&quot;                                                  
-#&gt; [42] &quot;phospholipid biosynthetic process&quot;                                                     
-#&gt; [43] &quot;sulfur amino acid metabolic process&quot;                                                   
-#&gt; [44] &quot;negative regulation of cell morphogenesis involved in differentiation&quot;                 
-#&gt; [45] &quot;protein-containing complex disassembly&quot;                                                
-#&gt; [46] &quot;regulation of DNA binding&quot;                                                             
-#&gt; [47] &quot;dendrite morphogenesis&quot;                                                                
-#&gt; [48] &quot;regulation of microtubule depolymerization&quot;                                            
-#&gt; [49] &quot;amyloid-beta formation&quot;                                                                
-#&gt; [50] &quot;regulation of protein-containing complex disassembly&quot;                                  
-#&gt; [51] &quot;positive regulation of proteolysis involved in cellular protein catabolic process&quot;     
-#&gt; [52] &quot;neuroepithelial cell differentiation&quot;                                                  
-#&gt; [53] &quot;striated muscle adaptation&quot;                                                            
-#&gt; [54] &quot;regulation of interspecies interactions between organisms&quot;                             
-#&gt; [55] &quot;regulation of transforming growth factor beta receptor signaling pathway&quot;              
-#&gt; [56] &quot;regulation of cardiac muscle cell proliferation&quot;                                       
-#&gt; [57] &quot;positive regulation of protein import&quot;                                                 
-#&gt; [58] &quot;histone H3 acetylation&quot;                                                                
-#&gt; [59] &quot;positive regulation of BMP signaling pathway&quot;                                          
-#&gt; [60] &quot;positive regulation of steroid biosynthetic process&quot;                                   
-#&gt; [61] &quot;positive regulation of cardiac muscle cell proliferation&quot;                              
-#&gt; [62] &quot;labyrinthine layer morphogenesis&quot;                                                      
-#&gt; [63] &quot;labyrinthine layer blood vessel development&quot;                                           
-#&gt; [64] &quot;positive regulation of dendritic spine morphogenesis&quot;                                  
-#&gt; [65] &quot;regulation of cellular response to transforming growth factor beta stimulus&quot;           
-#&gt; [66] &quot;alpha-amino acid metabolic process&quot;                                                    
-#&gt; [67] &quot;DNA-templated transcription, elongation&quot;                                               
-#&gt; [68] &quot;regulation of dendritic spine morphogenesis&quot;                                           
-#&gt; [69] &quot;insulin receptor signaling pathway&quot;                                                    
-#&gt; [70] &quot;negative regulation of canonical Wnt signaling pathway&quot;                                
-#&gt; [71] &quot;positive regulation of lipid biosynthetic process&quot;                                     
-#&gt; [72] &quot;regulation of protein import into nucleus&quot;                                             
-#&gt; [73] &quot;cellular response to ionizing radiation&quot;                                               
-#&gt; [74] &quot;determination of adult lifespan&quot;                                                       
-#&gt; [75] &quot;regulation of lipid biosynthetic process&quot;                                              
-#&gt;  [ reached getOption(&quot;max.print&quot;) -- omitted 8 entries ]
+#&gt;  [4] &quot;embryonic placenta morphogenesis&quot;                                                      
+#&gt;  [5] &quot;cortical actin cytoskeleton organization&quot;                                              
+#&gt;  [6] &quot;regulation of Wnt signaling pathway&quot;                                                   
+#&gt;  [7] &quot;regulation of canonical Wnt signaling pathway&quot;                                         
+#&gt;  [8] &quot;N-terminal protein amino acid modification&quot;                                            
+#&gt;  [9] &quot;regulation of muscle adaptation&quot;                                                       
+#&gt; [10] &quot;negative regulation of Wnt signaling pathway&quot;                                          
+#&gt; [11] &quot;viral process&quot;                                                                         
+#&gt; [12] &quot;regulation of transmembrane receptor protein serine/threonine kinase signaling pathway&quot;
+#&gt; [13] &quot;receptor metabolic process&quot;                                                            
+#&gt; [14] &quot;negative regulation of ubiquitin-dependent protein catabolic process&quot;                  
+#&gt; [15] &quot;response to transforming growth factor beta&quot;                                           
+#&gt; [16] &quot;heterochromatin organization&quot;                                                          
+#&gt; [17] &quot;gland morphogenesis&quot;                                                                   
+#&gt; [18] &quot;transforming growth factor beta receptor signaling pathway&quot;                            
+#&gt; [19] &quot;positive regulation of protein modification by small protein conjugation or removal&quot;   
+#&gt; [20] &quot;regulation of epidermal cell differentiation&quot;                                          
+#&gt; [21] &quot;hair cell differentiation&quot;                                                             
+#&gt; [22] &quot;heterochromatin assembly&quot;                                                              
+#&gt; [23] &quot;phospholipid transport&quot;                                                                
+#&gt; [24] &quot;dendritic spine morphogenesis&quot;                                                         
+#&gt; [25] &quot;positive regulation of transcription by RNA polymerase I&quot;                              
+#&gt; [26] &quot;positive regulation of proteasomal ubiquitin-dependent protein catabolic process&quot;      
+#&gt; [27] &quot;viral gene expression&quot;                                                                 
+#&gt; [28] &quot;ATP-dependent chromatin remodeling&quot;                                                    
+#&gt; [29] &quot;regulation of receptor internalization&quot;                                                
+#&gt; [30] &quot;regulation of protein import&quot;                                                          
+#&gt; [31] &quot;positive regulation of striated muscle tissue development&quot;                             
+#&gt; [32] &quot;positive regulation of muscle organ development&quot;                                       
+#&gt; [33] &quot;cellular response to transforming growth factor beta stimulus&quot;                         
+#&gt; [34] &quot;positive regulation of muscle tissue development&quot;                                      
+#&gt; [35] &quot;lung development&quot;                                                                      
+#&gt; [36] &quot;regulation of dendrite morphogenesis&quot;                                                  
+#&gt; [37] &quot;phospholipid biosynthetic process&quot;                                                     
+#&gt; [38] &quot;negative regulation of cell morphogenesis involved in differentiation&quot;                 
+#&gt; [39] &quot;dendrite morphogenesis&quot;                                                                
+#&gt; [40] &quot;regulation of microtubule depolymerization&quot;                                            
+#&gt; [41] &quot;amyloid-beta formation&quot;                                                                
+#&gt; [42] &quot;regulation of protein-containing complex disassembly&quot;                                  
+#&gt; [43] &quot;positive regulation of proteolysis involved in cellular protein catabolic process&quot;     
+#&gt; [44] &quot;neuroepithelial cell differentiation&quot;                                                  
+#&gt; [45] &quot;striated muscle adaptation&quot;                                                            
+#&gt; [46] &quot;regulation of interspecies interactions between organisms&quot;                             
+#&gt; [47] &quot;regulation of transforming growth factor beta receptor signaling pathway&quot;              
+#&gt; [48] &quot;positive regulation of BMP signaling pathway&quot;                                          
+#&gt; [49] &quot;positive regulation of steroid biosynthetic process&quot;                                   
+#&gt; [50] &quot;positive regulation of cardiac muscle cell proliferation&quot;                              
+#&gt; [51] &quot;labyrinthine layer morphogenesis&quot;                                                      
+#&gt; [52] &quot;labyrinthine layer blood vessel development&quot;                                           
+#&gt; [53] &quot;positive regulation of dendritic spine morphogenesis&quot;                                  
+#&gt; [54] &quot;regulation of cellular response to transforming growth factor beta stimulus&quot;           
+#&gt; [55] &quot;alpha-amino acid metabolic process&quot;                                                    
+#&gt; [56] &quot;regulation of dendritic spine morphogenesis&quot;                                           
+#&gt; [57] &quot;insulin receptor signaling pathway&quot;                                                    
+#&gt; [58] &quot;negative regulation of canonical Wnt signaling pathway&quot;                                
+#&gt; [59] &quot;positive regulation of lipid biosynthetic process&quot;                                     
+#&gt; [60] &quot;regulation of protein import into nucleus&quot;                                             
+#&gt; [61] &quot;determination of adult lifespan&quot;                                                       
+#&gt; [62] &quot;regulation of lipid biosynthetic process&quot;                                              
+#&gt; [63] &quot;microtubule depolymerization&quot;                                                          
+#&gt; [64] &quot;regulation of transcription regulatory region DNA binding&quot;                             
+#&gt; [65] &quot;negative regulation of ion transport&quot;                                                  
+#&gt; [66] &quot;positive regulation of ubiquitin-dependent protein catabolic process&quot;                  
+#&gt; [67] &quot;regulation of receptor-mediated endocytosis&quot;                                           
+#&gt; [68] &quot;salivary gland development&quot;                                                            
+#&gt; [69] &quot;lung morphogenesis&quot;                                                                    
+#&gt; [70] &quot;exocrine system development&quot;                                                           
+#&gt; [71] &quot;negative regulation of peptidyl-serine phosphorylation&quot;                                
+#&gt; [72] &quot;signal transduction involved in cell cycle checkpoint&quot;                                 
+#&gt; [73] &quot;signal transduction involved in DNA integrity checkpoint&quot;                              
+#&gt; [74] &quot;signal transduction involved in DNA damage checkpoint&quot;                                 
+#&gt; [75] &quot;viral genome replication&quot;                                                              
+#&gt;  [ reached getOption(&quot;max.print&quot;) -- omitted 9 entries ]
 
 length(intersect(e8.5$V1, e7.5$V1))
 #&gt; [1] 37
@@ -1058,14 +1126,48 @@ length(e9.5$V1)
 length(trueE9.5)
 #&gt; [1] 1838
 trueE9.5go &lt;- go(trueE9.5)
-#write.table(trueE9.5go, &quot;Files/trueE9.5go.txt&quot;, sep = &quot;\t&quot;, quote = F, row.names = F)
+write.table(trueE9.5go, &quot;Files/trueE9.5go.txt&quot;, sep = &quot;\t&quot;, quote = F, row.names = F)
 multiE9.5 &lt;- setdiff(e9.5$V1, trueE9.5)
+intersect(multiE9.5, e7.5$V1)
+#&gt; [1] &quot;ENSMUSG00000019558&quot; &quot;ENSMUSG00000090841&quot; &quot;ENSMUSG00000023022&quot;
+#&gt; [4] &quot;ENSMUSG00000066640&quot; &quot;ENSMUSG00000026883&quot;
+intersect(multiE9.5, e8.5$V1)
+#&gt;  [1] &quot;ENSMUSG00000020422&quot; &quot;ENSMUSG00000028654&quot; &quot;ENSMUSG00000023079&quot;
+#&gt;  [4] &quot;ENSMUSG00000031010&quot; &quot;ENSMUSG00000040857&quot; &quot;ENSMUSG00000003309&quot;
+#&gt;  [7] &quot;ENSMUSG00000023411&quot; &quot;ENSMUSG00000044864&quot; &quot;ENSMUSG00000021273&quot;
+#&gt; [10] &quot;ENSMUSG00000032702&quot; &quot;ENSMUSG00000032405&quot; &quot;ENSMUSG00000036580&quot;
+#&gt; [13] &quot;ENSMUSG00000018428&quot; &quot;ENSMUSG00000027303&quot; &quot;ENSMUSG00000026202&quot;
+#&gt; [16] &quot;ENSMUSG00000027624&quot; &quot;ENSMUSG00000022464&quot; &quot;ENSMUSG00000020186&quot;
+#&gt; [19] &quot;ENSMUSG00000031161&quot; &quot;ENSMUSG00000040268&quot; &quot;ENSMUSG00000041408&quot;
+#&gt; [22] &quot;ENSMUSG00000026409&quot; &quot;ENSMUSG00000033075&quot; &quot;ENSMUSG00000032531&quot;
+#&gt; [25] &quot;ENSMUSG00000041757&quot; &quot;ENSMUSG00000033170&quot; &quot;ENSMUSG00000061411&quot;
+#&gt; [28] &quot;ENSMUSG00000039231&quot; &quot;ENSMUSG00000046671&quot; &quot;ENSMUSG00000040606&quot;
+#&gt; [31] &quot;ENSMUSG00000026107&quot; &quot;ENSMUSG00000031099&quot; &quot;ENSMUSG00000020782&quot;
+#&gt; [34] &quot;ENSMUSG00000060012&quot; &quot;ENSMUSG00000029833&quot; &quot;ENSMUSG00000081044&quot;
+#&gt; [37] &quot;ENSMUSG00000026623&quot; &quot;ENSMUSG00000039988&quot; &quot;ENSMUSG00000009569&quot;
+#&gt; [40] &quot;ENSMUSG00000039831&quot; &quot;ENSMUSG00000035914&quot; &quot;ENSMUSG00000018819&quot;
+#&gt; [43] &quot;ENSMUSG00000042724&quot; &quot;ENSMUSG00000032883&quot; &quot;ENSMUSG00000063382&quot;
+#&gt; [46] &quot;ENSMUSG00000041220&quot; &quot;ENSMUSG00000032015&quot; &quot;ENSMUSG00000024308&quot;
+#&gt; [49] &quot;ENSMUSG00000021604&quot; &quot;ENSMUSG00000041354&quot; &quot;ENSMUSG00000032010&quot;
+#&gt; [52] &quot;ENSMUSG00000025665&quot; &quot;ENSMUSG00000084128&quot; &quot;ENSMUSG00000040785&quot;
+#&gt; [55] &quot;ENSMUSG00000027510&quot; &quot;ENSMUSG00000066735&quot; &quot;ENSMUSG00000028906&quot;
+#&gt; [58] &quot;ENSMUSG00000025451&quot; &quot;ENSMUSG00000053436&quot; &quot;ENSMUSG00000042659&quot;
+#&gt; [61] &quot;ENSMUSG00000024098&quot; &quot;ENSMUSG00000053754&quot; &quot;ENSMUSG00000025381&quot;
+#&gt; [64] &quot;ENSMUSG00000001472&quot; &quot;ENSMUSG00000039470&quot; &quot;ENSMUSG00000003308&quot;
+#&gt; [67] &quot;ENSMUSG00000041870&quot; &quot;ENSMUSG00000032216&quot; &quot;ENSMUSG00000003731&quot;
+#&gt; [70] &quot;ENSMUSG00000030172&quot; &quot;ENSMUSG00000050627&quot; &quot;ENSMUSG00000029722&quot;
+#&gt; [73] &quot;ENSMUSG00000061393&quot; &quot;ENSMUSG00000042507&quot; &quot;ENSMUSG00000025764&quot;
+#&gt;  [ reached getOption(&quot;max.print&quot;) -- omitted 34 entries ]
+
 e9.5specificTrans &lt;- read.table(&quot;Files/e9.5specific_trans.txt&quot;, header = F)
 write.table(t2g[t2g$ens_gene %in% multiE9.5 &amp; t2g$target_id %in% e9.5specificTrans$V1,], &quot;Files/multiE9.5.txt&quot;, sep = &quot;\t&quot;, quote = F, row.names = F)
 #write.table(distinct(t2g[t2g$ens_gene %in% multiE9.5, 2:3]), &quot;Files/multiE9.5.txt&quot;, sep = &quot;\t&quot;, quote = F, row.names = F)
 
 multiE9.5go &lt;- go(multiE9.5)
-#write.table(multiE9.5go, &quot;Files/multiE9.5go.txt&quot;, sep = &quot;\t&quot;, quote = F, row.names = F)
+write.table(multiE9.5go, &quot;Files/multiE9.5go.txt&quot;, sep = &quot;\t&quot;, quote = F, row.names = F)
+
+multiE9.5_e8.5go &lt;- go(intersect(multiE9.5, e8.5$V1))
+write.table(multiE9.5_e8.5go, &quot;Files/multiE9.5_e8.5go.txt&quot;, sep = &quot;\t&quot;, quote = F, row.names = F)
 
 i&lt;-&quot;e9.5&quot;
 genes &lt;- read.table(paste0(&quot;/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/&quot;, i, &quot;specific_TSS.bed&quot;), header = F)
@@ -1110,110 +1212,114 @@ setdiff(trueE9.5go$Description, res$Description)
 #&gt; [37] &quot;regulation of coagulation&quot;                                                        
 #&gt; [38] &quot;activation of GTPase activity&quot;                                                    
 #&gt; [39] &quot;positive regulation of mitotic cell cycle phase transition&quot;                       
-#&gt; [40] &quot;endosome organization&quot;                                                            
-#&gt; [41] &quot;regulation of transcription from RNA polymerase II promoter in response to stress&quot;
-#&gt; [42] &quot;detoxification&quot;                                                                   
-#&gt; [43] &quot;determination of heart left/right asymmetry&quot;                                      
-#&gt; [44] &quot;positive regulation of neural precursor cell proliferation&quot;                       
-#&gt; [45] &quot;positive regulation of branching involved in ureteric bud morphogenesis&quot;          
-#&gt; [46] &quot;positive regulation of extracellular matrix organization&quot;                         
-#&gt; [47] &quot;tumor necrosis factor-mediated signaling pathway&quot;                                 
-#&gt; [48] &quot;filopodium assembly&quot;                                                              
-#&gt; [49] &quot;regulation of kidney development&quot;                                                 
-#&gt; [50] &quot;leukocyte adhesion to vascular endothelial cell&quot;                                  
-#&gt; [51] &quot;diet induced thermogenesis&quot;                                                       
-#&gt; [52] &quot;epithelial to mesenchymal transition involved in endocardial cushion formation&quot;   
-#&gt; [53] &quot;sphingomyelin metabolic process&quot;                                                  
-#&gt; [54] &quot;macrophage cytokine production&quot;                                                   
-#&gt; [55] &quot;glial cell apoptotic process&quot;                                                     
-#&gt; [56] &quot;cell migration involved in gastrulation&quot;                                          
-#&gt; [57] &quot;negative regulation of glial cell proliferation&quot;                                  
-#&gt; [58] &quot;atrial septum morphogenesis&quot;                                                      
-#&gt; [59] &quot;metanephric nephron tubule development&quot;                                           
-#&gt; [60] &quot;regulation of mesenchymal cell proliferation&quot;                                     
-#&gt; [61] &quot;semaphorin-plexin signaling pathway&quot;                                              
-#&gt; [62] &quot;positive regulation of kidney development&quot;                                        
-#&gt; [63] &quot;neuromuscular process controlling balance&quot;                                        
-#&gt; [64] &quot;negative regulation of gliogenesis&quot;                                               
-#&gt; [65] &quot;ventricular cardiac muscle tissue morphogenesis&quot;                                  
-#&gt; [66] &quot;protein O-linked glycosylation&quot;
+#&gt; [40] &quot;neuromuscular process controlling balance&quot;                                        
+#&gt; [41] &quot;mammary gland epithelium development&quot;                                             
+#&gt; [42] &quot;negative regulation of axon extension&quot;                                            
+#&gt; [43] &quot;production of miRNAs involved in gene silencing by miRNA&quot;                         
+#&gt; [44] &quot;glial cell proliferation&quot;                                                         
+#&gt; [45] &quot;regulation of endocrine process&quot;                                                  
+#&gt; [46] &quot;animal organ regeneration&quot;                                                        
+#&gt; [47] &quot;plasminogen activation&quot;                                                           
+#&gt; [48] &quot;thyroid hormone metabolic process&quot;                                                
+#&gt; [49] &quot;regulation of insulin-like growth factor receptor signaling pathway&quot;              
+#&gt; [50] &quot;defense response to fungus&quot;                                                       
+#&gt; [51] &quot;positive regulation of mesonephros development&quot;                                   
+#&gt; [52] &quot;positive regulation of calcium ion import&quot;                                        
+#&gt; [53] &quot;heterophilic cell-cell adhesion via plasma membrane cell adhesion molecules&quot;      
+#&gt; [54] &quot;regulation of extrinsic apoptotic signaling pathway in absence of ligand&quot;         
+#&gt; [55] &quot;respiratory system process&quot;                                                       
+#&gt; [56] &quot;Schwann cell development&quot;                                                         
+#&gt; [57] &quot;regulation of axon extension involved in axon guidance&quot;                           
+#&gt; [58] &quot;negative regulation of signal transduction in absence of ligand&quot;                  
+#&gt; [59] &quot;negative regulation of extrinsic apoptotic signaling pathway in absence of ligand&quot;
+#&gt; [60] &quot;negative regulation of bone mineralization&quot;                                       
+#&gt; [61] &quot;hormone catabolic process&quot;                                                        
+#&gt; [62] &quot;cGMP metabolic process&quot;                                                           
+#&gt; [63] &quot;mesenchymal to epithelial transition&quot;                                             
+#&gt; [64] &quot;regulation of epithelial tube formation&quot;                                          
+#&gt; [65] &quot;positive regulation of blood coagulation&quot;                                         
+#&gt; [66] &quot;cardiac myofibril assembly&quot;                                                       
+#&gt; [67] &quot;regulation of branching involved in ureteric bud morphogenesis&quot;                   
+#&gt; [68] &quot;modification of postsynaptic structure&quot;                                           
+#&gt; [69] &quot;positive regulation of hemostasis&quot;                                                
+#&gt; [70] &quot;negative regulation of potassium ion transmembrane transport&quot;
 setdiff(res$Description, trueE9.5go$Description)
-#&gt;  [1] &quot;transmembrane receptor protein tyrosine kinase signaling pathway&quot;     
-#&gt;  [2] &quot;muscle cell differentiation&quot;                                          
-#&gt;  [3] &quot;positive regulation of kinase activity&quot;                               
-#&gt;  [4] &quot;striated muscle cell differentiation&quot;                                 
-#&gt;  [5] &quot;receptor metabolic process&quot;                                           
-#&gt;  [6] &quot;response to BMP&quot;                                                      
-#&gt;  [7] &quot;cellular response to BMP stimulus&quot;                                    
-#&gt;  [8] &quot;post-embryonic development&quot;                                           
-#&gt;  [9] &quot;regulation of muscle cell differentiation&quot;                            
-#&gt; [10] &quot;positive regulation of lipid metabolic process&quot;                       
-#&gt; [11] &quot;cellular protein complex disassembly&quot;                                 
-#&gt; [12] &quot;salivary gland development&quot;                                           
-#&gt; [13] &quot;peptidyl-threonine modification&quot;                                      
-#&gt; [14] &quot;mesoderm development&quot;                                                 
-#&gt; [15] &quot;receptor internalization&quot;                                             
-#&gt; [16] &quot;regulation of muscle adaptation&quot;                                      
-#&gt; [17] &quot;regulation of inner ear auditory receptor cell differentiation&quot;       
-#&gt; [18] &quot;regulation of mechanoreceptor differentiation&quot;                        
-#&gt; [19] &quot;positive regulation of adenylate cyclase activity&quot;                    
-#&gt; [20] &quot;regulation of inner ear receptor cell differentiation&quot;                
-#&gt; [21] &quot;regulation of DNA binding&quot;                                            
-#&gt; [22] &quot;regulation of receptor-mediated endocytosis&quot;                          
-#&gt; [23] &quot;regulation of protein-containing complex disassembly&quot;                 
-#&gt; [24] &quot;regulation of epidermis development&quot;                                  
-#&gt; [25] &quot;postsynaptic actin cytoskeleton organization&quot;                         
-#&gt; [26] &quot;postsynaptic cytoskeleton organization&quot;                               
-#&gt; [27] &quot;negative regulation of microtubule polymerization or depolymerization&quot;
-#&gt; [28] &quot;regulation of epidermal cell differentiation&quot;                         
-#&gt; [29] &quot;positive regulation of striated muscle tissue development&quot;            
-#&gt; [30] &quot;positive regulation of muscle organ development&quot;                      
-#&gt; [31] &quot;regulation of plasma lipoprotein particle levels&quot;                     
-#&gt; [32] &quot;regulation of erythrocyte differentiation&quot;                            
-#&gt; [33] &quot;positive regulation of muscle tissue development&quot;                     
-#&gt; [34] &quot;regulation of receptor internalization&quot;                               
-#&gt; [35] &quot;regulation of response to oxidative stress&quot;                           
-#&gt; [36] &quot;amyloid-beta formation&quot;                                               
-#&gt; [37] &quot;regulation of myotube differentiation&quot;                                
-#&gt; [38] &quot;phosphatidylcholine biosynthetic process&quot;                             
-#&gt; [39] &quot;venous blood vessel development&quot;                                      
-#&gt; [40] &quot;regulation of response to reactive oxygen species&quot;                    
-#&gt; [41] &quot;mechanoreceptor differentiation&quot;                                      
-#&gt; [42] &quot;regulation of granulocyte chemotaxis&quot;                                 
-#&gt; [43] &quot;regulation of mononuclear cell migration&quot;                             
-#&gt; [44] &quot;regulation of amyloid-beta formation&quot;                                 
-#&gt; [45] &quot;cytokine secretion involved in immune response&quot;                       
-#&gt; [46] &quot;notochord development&quot;                                                
-#&gt; [47] &quot;low-density lipoprotein particle clearance&quot;                           
-#&gt; [48] &quot;negative regulation of substrate adhesion-dependent cell spreading&quot;   
-#&gt; [49] &quot;regulation of protein localization to endosome&quot;                       
-#&gt; [50] &quot;regulation of cyclase activity&quot;                                       
-#&gt; [51] &quot;anoikis&quot;                                                              
-#&gt; [52] &quot;regulation of steroid hormone biosynthetic process&quot;                   
-#&gt; [53] &quot;amyloid precursor protein catabolic process&quot;                          
-#&gt; [54] &quot;regulation of muscle hypertrophy&quot;                                     
-#&gt; [55] &quot;response to lithium ion&quot;                                              
-#&gt; [56] &quot;positive regulation of non-canonical Wnt signaling pathway&quot;           
-#&gt; [57] &quot;vitamin transport&quot;                                                    
-#&gt; [58] &quot;positive regulation of gliogenesis&quot;                                   
-#&gt; [59] &quot;ruffle organization&quot;                                                  
-#&gt; [60] &quot;positive regulation of protein localization to cell periphery&quot;        
-#&gt; [61] &quot;activation of JUN kinase activity&quot;                                    
-#&gt; [62] &quot;long-term memory&quot;                                                     
-#&gt; [63] &quot;head morphogenesis&quot;                                                   
-#&gt; [64] &quot;secondary alcohol biosynthetic process&quot;                               
-#&gt; [65] &quot;dendritic spine morphogenesis&quot;                                        
-#&gt; [66] &quot;cellular response to retinoic acid&quot;                                   
-#&gt; [67] &quot;face morphogenesis&quot;                                                   
-#&gt; [68] &quot;positive regulation of macrophage migration&quot;                          
-#&gt; [69] &quot;regulation of protein import&quot;                                         
-#&gt; [70] &quot;prepulse inhibition&quot;                                                  
-#&gt; [71] &quot;neuromuscular junction development&quot;                                   
-#&gt; [72] &quot;regulation of macrophage activation&quot;                                  
-#&gt; [73] &quot;positive regulation of dendrite morphogenesis&quot;                        
-#&gt; [74] &quot;positive regulation of macrophage chemotaxis&quot;                         
-#&gt; [75] &quot;regulation of protein targeting to membrane&quot;                          
-#&gt;  [ reached getOption(&quot;max.print&quot;) -- omitted 20 entries ]</code></pre>
+#&gt;  [1] &quot;transmembrane receptor protein tyrosine kinase signaling pathway&quot;  
+#&gt;  [2] &quot;muscle cell differentiation&quot;                                       
+#&gt;  [3] &quot;positive regulation of kinase activity&quot;                            
+#&gt;  [4] &quot;striated muscle cell differentiation&quot;                              
+#&gt;  [5] &quot;receptor metabolic process&quot;                                        
+#&gt;  [6] &quot;response to BMP&quot;                                                   
+#&gt;  [7] &quot;cellular response to BMP stimulus&quot;                                 
+#&gt;  [8] &quot;post-embryonic development&quot;                                        
+#&gt;  [9] &quot;regulation of muscle cell differentiation&quot;                         
+#&gt; [10] &quot;positive regulation of lipid metabolic process&quot;                    
+#&gt; [11] &quot;cellular protein complex disassembly&quot;                              
+#&gt; [12] &quot;peptidyl-threonine modification&quot;                                   
+#&gt; [13] &quot;mesoderm development&quot;                                              
+#&gt; [14] &quot;receptor internalization&quot;                                          
+#&gt; [15] &quot;regulation of muscle adaptation&quot;                                   
+#&gt; [16] &quot;regulation of inner ear auditory receptor cell differentiation&quot;    
+#&gt; [17] &quot;regulation of mechanoreceptor differentiation&quot;                     
+#&gt; [18] &quot;positive regulation of adenylate cyclase activity&quot;                 
+#&gt; [19] &quot;regulation of inner ear receptor cell differentiation&quot;             
+#&gt; [20] &quot;regulation of DNA binding&quot;                                         
+#&gt; [21] &quot;regulation of receptor-mediated endocytosis&quot;                       
+#&gt; [22] &quot;regulation of protein-containing complex disassembly&quot;              
+#&gt; [23] &quot;regulation of epidermis development&quot;                               
+#&gt; [24] &quot;postsynaptic actin cytoskeleton organization&quot;                      
+#&gt; [25] &quot;postsynaptic cytoskeleton organization&quot;                            
+#&gt; [26] &quot;regulation of epidermal cell differentiation&quot;                      
+#&gt; [27] &quot;positive regulation of striated muscle tissue development&quot;         
+#&gt; [28] &quot;positive regulation of muscle organ development&quot;                   
+#&gt; [29] &quot;positive regulation of muscle tissue development&quot;                  
+#&gt; [30] &quot;regulation of response to oxidative stress&quot;                        
+#&gt; [31] &quot;amyloid-beta formation&quot;                                            
+#&gt; [32] &quot;regulation of response to reactive oxygen species&quot;                 
+#&gt; [33] &quot;mechanoreceptor differentiation&quot;                                   
+#&gt; [34] &quot;regulation of granulocyte chemotaxis&quot;                              
+#&gt; [35] &quot;regulation of mononuclear cell migration&quot;                          
+#&gt; [36] &quot;regulation of amyloid-beta formation&quot;                              
+#&gt; [37] &quot;negative regulation of substrate adhesion-dependent cell spreading&quot;
+#&gt; [38] &quot;regulation of protein localization to endosome&quot;                    
+#&gt; [39] &quot;regulation of cyclase activity&quot;                                    
+#&gt; [40] &quot;amyloid precursor protein catabolic process&quot;                       
+#&gt; [41] &quot;regulation of muscle hypertrophy&quot;                                  
+#&gt; [42] &quot;response to lithium ion&quot;                                           
+#&gt; [43] &quot;positive regulation of non-canonical Wnt signaling pathway&quot;        
+#&gt; [44] &quot;positive regulation of gliogenesis&quot;                                
+#&gt; [45] &quot;ruffle organization&quot;                                               
+#&gt; [46] &quot;positive regulation of protein localization to cell periphery&quot;     
+#&gt; [47] &quot;activation of JUN kinase activity&quot;                                 
+#&gt; [48] &quot;long-term memory&quot;                                                  
+#&gt; [49] &quot;dendritic spine morphogenesis&quot;                                     
+#&gt; [50] &quot;positive regulation of macrophage migration&quot;                       
+#&gt; [51] &quot;regulation of protein import&quot;                                      
+#&gt; [52] &quot;prepulse inhibition&quot;                                               
+#&gt; [53] &quot;positive regulation of macrophage chemotaxis&quot;                      
+#&gt; [54] &quot;regulation of protein targeting to membrane&quot;                       
+#&gt; [55] &quot;regulation of T cell receptor signaling pathway&quot;                   
+#&gt; [56] &quot;positive regulation of protein targeting to membrane&quot;              
+#&gt; [57] &quot;regulation of cardiac muscle hypertrophy&quot;                          
+#&gt; [58] &quot;ruffle assembly&quot;                                                   
+#&gt; [59] &quot;heparan sulfate proteoglycan metabolic process&quot;                    
+#&gt; [60] &quot;regulation of stem cell population maintenance&quot;                    
+#&gt; [61] &quot;paraxial mesoderm development&quot;                                     
+#&gt; [62] &quot;positive regulation of amyloid-beta formation&quot;                     
+#&gt; [63] &quot;regulation of protein import into nucleus&quot;                         
+#&gt; [64] &quot;inner ear auditory receptor cell differentiation&quot;                  
+#&gt; [65] &quot;lymph vessel development&quot;                                          
+#&gt; [66] &quot;regulation of glycogen biosynthetic process&quot;                       
+#&gt; [67] &quot;regulation of glucan biosynthetic process&quot;                         
+#&gt; [68] &quot;negative regulation of embryonic development&quot;                      
+#&gt; [69] &quot;plasma lipoprotein particle clearance&quot;                             
+#&gt; [70] &quot;regulation of glycogen metabolic process&quot;                          
+#&gt; [71] &quot;regulation of amyloid precursor protein catabolic process&quot;         
+#&gt; [72] &quot;lung morphogenesis&quot;                                                
+#&gt; [73] &quot;regulation of lipid kinase activity&quot;                               
+#&gt; [74] &quot;regulation of dendritic spine morphogenesis&quot;                       
+#&gt; [75] &quot;protein localization to endosome&quot;                                  
+#&gt;  [ reached getOption(&quot;max.print&quot;) -- omitted 26 entries ]</code></pre>
 <pre class="r"><code>sessionInfo()
 #&gt; R version 4.0.2 (2020-06-22)
 #&gt; Platform: x86_64-pc-linux-gnu (64-bit)

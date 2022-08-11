@@ -77,7 +77,7 @@ library("clusterProfiler")
 library("org.Mm.eg.db")
 
 go <- function(subnetworkGenes) {
-  GO <- enrichGO(gene = subnetworkGenes, OrgDb=org.Mm.eg.db, ont = "BP", qvalueCutoff = 0.05, maxGSSize=1000, readable = T, keyType = "ENSEMBL")
+  GO <- enrichGO(gene = subnetworkGenes, OrgDb=org.Mm.eg.db, ont = "BP", pvalueCutoff = 1, qvalueCutoff = 1, maxGSSize=1000, readable = T, keyType = "ENSEMBL")
   goSimplify <- GO
   simplify2 <- as.data.frame(goSimplify)
   simplify2$GeneRatio <- sapply(strsplit(simplify2$GeneRatio, "/"), function(x) as.numeric(x[1])/as.numeric(x[2]))
@@ -175,8 +175,8 @@ for (time in c("e7.5", "e8.5", "e9.5")) {
 ## Different combinations of transcripts
 # transcripts that are up in e7.5 and then down in e8.5 but then up again in e9.5
 ```{r}
-g1 <- read.table("Files/e7.5_e7.5vsE8.5_DEtransGenes.txt", header = T)
-g2 <- read.table("Files/e9.5_e8.5vse9.5_DEtransGenes.txt", header = T)
+g1 <- read.table("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq//Files/e7.5_e7.5vsE8.5_DEtransGenes.txt", header = T)
+g2 <- read.table("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq//Files/e9.5_e8.5vse9.5_DEtransGenes.txt", header = T)
 g <- intersect(g1$ens_gene, g2$ens_gene)
 g_go <- go(g)
 g_go$Description

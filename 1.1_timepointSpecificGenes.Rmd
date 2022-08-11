@@ -465,7 +465,7 @@ library("clusterProfiler")
 library("org.Mm.eg.db")
 
 go <- function(subnetworkGenes) {
-  GO <- enrichGO(gene = subnetworkGenes, OrgDb=org.Mm.eg.db, ont = "BP", qvalueCutoff = 0.05, maxGSSize=1000, readable = T, keyType = "ENSEMBL")
+  GO <- enrichGO(gene = subnetworkGenes, OrgDb=org.Mm.eg.db, ont = "BP", qvalueCutoff = 1, pvalueCutoff = 1, maxGSSize=1000, readable = T, keyType = "ENSEMBL")
   goSimplify <- GO
   simplify2 <- as.data.frame(goSimplify)
   simplify2$GeneRatio <- sapply(strsplit(simplify2$GeneRatio, "/"), function(x) as.numeric(x[1])/as.numeric(x[2]))
@@ -480,7 +480,7 @@ go <- function(subnetworkGenes) {
 for (i in c("e7.5", "e8.5", "e9.5")) {
   genes <- read.table(paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/", i, "specific_TSS.bed"), header = F)
   res <- go(genes$V4)
-  #write.table(res, paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/additionalAnalyses/", i, "specific_BP_filtered.txt"), quote = F, sep = "\t", row.names = F)
+  write.table(res, paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/additionalAnalyses/", i, "specific_BP_filtered.txt"), quote = F, sep = "\t", row.names = F)
 }
 ```
 E7.5-specific genes in general, and e7.5-specific genes that are unique to e7.5 timepoint (not present in any other timepoint).
@@ -493,10 +493,14 @@ trueE7.5 <- setdiff(setdiff(e7.5$V1, e8.5$V1), e9.5$V1)
 length(e7.5$V1)
 length(trueE7.5)
 trueE7.5go <- go(trueE7.5)
-#write.table(trueE7.5go, "Files/trueE7.5go.txt", sep = "\t", quote = F, row.names = F)
+write.table(trueE7.5go, "Files/trueE7.5go.txt", sep = "\t", quote = F, row.names = F)
 multiE7.5 <- setdiff(e7.5$V1, trueE7.5)
+intersect(multiE7.5, e8.5$V1)
+intersect(multiE7.5, e9.5$V1)
+
+
 e7.5specificTrans <- read.table("Files/e7.5specific_trans.txt", header = F)
-write.table(t2g[t2g$ens_gene %in% multiE7.5 & t2g$target_id %in% e7.5specificTrans$V1,], "Files/multiE7.5.txt", sep = "\t", quote = F, row.names = F)
+#write.table(t2g[t2g$ens_gene %in% multiE7.5 & t2g$target_id %in% e7.5specificTrans$V1,], "Files/multiE7.5.txt", sep = "\t", quote = F, row.names = F)
 multiE7.5go <- go(multiE7.5)
 #write.table(multiE7.5go, "Files/multiE7.5go.txt", sep = "\t", quote = F, row.names = F)
 
@@ -512,8 +516,11 @@ trueE8.5 <- setdiff(setdiff(e8.5$V1, e7.5$V1), e9.5$V1)
 length(e8.5$V1)
 length(trueE8.5)
 trueE8.5go <- go(trueE8.5)
-#write.table(trueE8.5go, "Files/trueE8.5go.txt", sep = "\t", quote = F, row.names = F)
+write.table(trueE8.5go, "Files/trueE8.5go.txt", sep = "\t", quote = F, row.names = F)
 multiE8.5 <- setdiff(e8.5$V1, trueE8.5)
+intersect(multiE8.5, e7.5$V1)
+intersect(multiE8.5, e9.5$V1)
+
 e8.5specificTrans <- read.table("Files/e8.5specific_trans.txt", header = F)
 write.table(t2g[t2g$ens_gene %in% multiE8.5 & t2g$target_id %in% e8.5specificTrans$V1,], "Files/multiE8.5.txt", sep = "\t", quote = F, row.names = F)
 multiE8.5go <- go(multiE8.5)
@@ -534,14 +541,20 @@ trueE9.5 <- setdiff(setdiff(e9.5$V1, e8.5$V1), e7.5$V1)
 length(e9.5$V1)
 length(trueE9.5)
 trueE9.5go <- go(trueE9.5)
-#write.table(trueE9.5go, "Files/trueE9.5go.txt", sep = "\t", quote = F, row.names = F)
+write.table(trueE9.5go, "Files/trueE9.5go.txt", sep = "\t", quote = F, row.names = F)
 multiE9.5 <- setdiff(e9.5$V1, trueE9.5)
+intersect(multiE9.5, e7.5$V1)
+intersect(multiE9.5, e8.5$V1)
+
 e9.5specificTrans <- read.table("Files/e9.5specific_trans.txt", header = F)
 write.table(t2g[t2g$ens_gene %in% multiE9.5 & t2g$target_id %in% e9.5specificTrans$V1,], "Files/multiE9.5.txt", sep = "\t", quote = F, row.names = F)
 #write.table(distinct(t2g[t2g$ens_gene %in% multiE9.5, 2:3]), "Files/multiE9.5.txt", sep = "\t", quote = F, row.names = F)
 
 multiE9.5go <- go(multiE9.5)
-#write.table(multiE9.5go, "Files/multiE9.5go.txt", sep = "\t", quote = F, row.names = F)
+write.table(multiE9.5go, "Files/multiE9.5go.txt", sep = "\t", quote = F, row.names = F)
+
+multiE9.5_e8.5go <- go(intersect(multiE9.5, e8.5$V1))
+write.table(multiE9.5_e8.5go, "Files/multiE9.5_e8.5go.txt", sep = "\t", quote = F, row.names = F)
 
 i<-"e9.5"
 genes <- read.table(paste0("/work/LAS/geetu-lab/hhvu/project1_2/rna-seq/PlacentaRNA-seq/Files/", i, "specific_TSS.bed"), header = F)

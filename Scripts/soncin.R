@@ -42,7 +42,7 @@ avg2 <- avg[avg$X %in% p2$X,]
 rownames(avg2) <- avg2$ILMN_Gene
 avg2 <- avg2[,2:55]
 avg2 <- as.matrix(avg2)
-avg3 <- rsn(avg3)
+avg3 <- rsn(avg2)
 
 plot(density(log2(avg3[,1])),col="blue",lwd=3)
 
